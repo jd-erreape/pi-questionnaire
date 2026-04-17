@@ -1,0 +1,51 @@
+{
+  "name": "pi-questionnaire",
+  "version": "0.1.0",
+  "description": "Pi package bootstrap for a questionnaire extension/tool.",
+  "type": "module",
+  "keywords": [
+    "pi-package",
+    "pi",
+    "questionnaire"
+  ],
+  "engines": {
+    "node": ">=20.6.0"
+  },
+  "files": [
+    "extensions",
+    "README.md"
+  ],
+  "scripts": {
+    "lint": "npm run lint:eslint && npm run lint:prettier",
+    "lint:eslint": "eslint .",
+    "lint:prettier": "prettier --check .",
+    "format": "prettier --write .",
+    "check": "tsc --noEmit --project tsconfig.json",
+    "test": "vitest --run",
+    "pack:check": "npm pack --dry-run --cache ./.npm-cache",
+    "verify": "npm run lint && npm run check && npm test && npm run pack:check",
+    "dev:pi": "pi -e ./extensions/questionnaire/index.ts"
+  },
+  "pi": {
+    "extensions": [
+      "./extensions"
+    ]
+  },
+  "peerDependencies": {
+    "@mariozechner/pi-coding-agent": "*",
+    "@sinclair/typebox": "*"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@mariozechner/pi-coding-agent": "^0.67.6",
+    "@sinclair/typebox": "^0.34.49",
+    "@types/node": "^24.3.0",
+    "eslint": "^10.2.1",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.5.0",
+    "prettier": "^3.8.3",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.58.2",
+    "vitest": "^3.2.4"
+  }
+}

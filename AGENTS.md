@@ -7,6 +7,7 @@ Guidance for coding agents working in this repository.
 This repository is for a **Pi package** implemented in **TypeScript**, currently aimed at building a high-quality `questionnaire` extension/tool for Pi.
 
 Prefer solutions that keep the package:
+
 - publishable
 - testable
 - small in surface area
@@ -46,6 +47,7 @@ npm run pack:check
 ```
 
 Notes:
+
 - `lint` = formatting/linting validation
 - `check` = typecheck and any additional static verification
 - `test` = automated test suite
@@ -60,6 +62,7 @@ TDD is the default for behavior changes.
 ### Required workflow
 
 Use **red -> green -> refactor** for:
+
 - new features with real logic
 - bug fixes
 - regressions
@@ -76,6 +79,7 @@ Use **red -> green -> refactor** for:
 ### Acceptable exceptions
 
 Test-first is not mandatory for:
+
 - documentation-only changes
 - pure repo scaffolding with no runtime behavior yet
 - mechanical renames with no behavior change
@@ -88,6 +92,7 @@ When using an exception, state it clearly.
 Prefer tests that are fast, deterministic, and local.
 
 Prioritize coverage for:
+
 - schema validation
 - normalization/defaulting
 - questionnaire state transitions
@@ -166,6 +171,7 @@ This repository is still being established. While bootstrapping it:
 ## Delivery checklist
 
 For each implementation task, report:
+
 - what changed
 - which files changed
 - which commands were run
