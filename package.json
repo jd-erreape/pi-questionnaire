@@ -1,7 +1,7 @@
 {
   "name": "pi-questionnaire",
   "version": "0.1.0",
-  "description": "Pi package bootstrap for a questionnaire extension/tool.",
+  "description": "Pi package providing an interactive questionnaire extension/tool.",
   "type": "module",
   "keywords": [
     "pi-package",
