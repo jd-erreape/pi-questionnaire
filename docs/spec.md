@@ -133,7 +133,7 @@ It does not include host-assigned questionnaire instance metadata such as `reque
 
 - required
 - ordered list of questions to ask
-- answers are returned in the same order
+- submitted responses are returned in the same order
 
 #### `header`
 
@@ -350,9 +350,9 @@ The order of `options` within each question must be preserved.
 
 ### 7.4 Normalized question echo
 
-Success results must echo normalized questions in `details.questions`.
+Success results must echo the normalized question text in `details.responses`.
 
-That means the echoed question data should include normalized defaults, not only the original raw request shape.
+That means each `details.responses[i].question` value must match the normalized `question` text for question slot `i`.
 
 ---
 
@@ -421,16 +421,21 @@ If a second questionnaire is requested while another is active in the same sessi
 
 ## 9. Result schema
 
-### 9.1 Answer representation
+### 9.1 Submitted response representation
 
-The public answer representation is:
+The public submitted response representation is:
 
 ```ts
-interface QuestionnaireAnswer {
+interface QuestionnaireSubmittedResponse {
+  question: string;
   selections: string[];
-  custom: boolean;
 }
 ```
+
+#### `question`
+
+- the normalized question text for the response slot
+- is echoed so consumers do not need to zip parallel arrays together
 
 #### `selections`
 
@@ -440,15 +445,9 @@ interface QuestionnaireAnswer {
 - for skipped optional questions, the value is `[]`
 - entries may contain predefined option labels, custom answers, or both
 
-Every question must always occupy exactly one answer slot.
+Every question must always occupy exactly one response slot.
 
-An answer array with missing, sparse, or reordered slots is invalid.
-
-#### `custom`
-
-- `true` if at least one custom user-provided selection is present in that answer slot
-- `false` otherwise
-- for skipped optional questions, the value is `false`
+A response array with missing, sparse, or reordered slots is invalid.
 
 ### 9.2 Successful result details
 
@@ -457,29 +456,16 @@ On successful submission, `details` must have this shape:
 ```ts
 interface QuestionnaireSuccessDetails {
   status: "submitted";
-  title?: string;
-  instructions?: string;
-  questions: Array<{
-    header: string;
-    question: string;
-    options: Array<{
-      label: string;
-      description?: string;
-    }>;
-    multiSelect: boolean;
-    allowCustom: boolean;
-    required: boolean;
-  }>;
-  answers: QuestionnaireAnswer[];
+  responses: QuestionnaireSubmittedResponse[];
 }
 ```
 
 Rules:
 
-- `answers.length` must equal `questions.length`
-- each question must occupy exactly one answer slot
-- answer slot `i` must align with question `i`
-- `questions` must be the normalized question list for the questionnaire instance
+- `responses.length` must equal the questionnaire's normalized question count
+- each question must occupy exactly one response slot
+- response slot `i` must align with question `i`
+- `responses[i].question` must equal the normalized question text for question `i`
 - the alignment contract applies to the fixed normalized ordering created when the questionnaire instance was accepted
 
 ### 9.3 Successful tool result envelope
@@ -491,10 +477,7 @@ A successful tool result should follow this shape:
   content: [{ type: "text", text: "User answered 2 questions." }],
   details: {
     status: "submitted",
-    title?: string,
-    instructions?: string,
-    questions: [...],
-    answers: [...]
+    responses: [...]
   }
 }
 ```
@@ -827,42 +810,14 @@ Reason:
   ],
   "details": {
     "status": "submitted",
-    "title": "Implementation preferences",
-    "instructions": "Keep answers concise.",
-    "questions": [
+    "responses": [
       {
-        "header": "Framework",
         "question": "Which frontend framework should I target?",
-        "options": [
-          { "label": "React", "description": "Component-driven" },
-          { "label": "Vue", "description": "Progressive framework" },
-          { "label": "Svelte", "description": "Compile-time approach" }
-        ],
-        "multiSelect": false,
-        "allowCustom": true,
-        "required": true
+        "selections": ["React"]
       },
       {
-        "header": "Testing",
         "question": "Which testing layers should I include?",
-        "options": [
-          { "label": "Unit tests" },
-          { "label": "Integration tests" },
-          { "label": "E2E tests" }
-        ],
-        "multiSelect": true,
-        "allowCustom": true,
-        "required": false
-      }
-    ],
-    "answers": [
-      {
-        "selections": ["React"],
-        "custom": false
-      },
-      {
-        "selections": [],
-        "custom": false
+        "selections": []
       }
     ]
   }
@@ -922,9 +877,9 @@ Reason:
 
 This section is informative only.
 
-### 12.1 Why answers are index-aligned
+### 12.1 Why responses are index-aligned
 
-Answers are aligned by question index so consumers do not have to depend on question text uniqueness.
+Responses are aligned by question index so consumers do not have to depend on question text uniqueness.
 
 ### 12.2 Why unknown fields are rejected
 

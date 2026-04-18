@@ -176,9 +176,6 @@ export class Questionnaire {
 
       submittedAnswers.push({
         selections: slot.selections.map((selection) => selection.value),
-        custom: slot.selections.some(
-          (selection) => selection.source === "custom",
-        ),
       });
     });
 

@@ -1,15 +1,15 @@
-export interface QuestionnaireAnswerSelectionDto {
+export interface QuestionnaireDraftSelectionDto {
   source: "option" | "custom";
   value: string;
 }
 
-export interface QuestionnaireAnswerStateSlotDto {
-  selections: QuestionnaireAnswerSelectionDto[];
+export interface QuestionnaireDraftAnswerDto {
+  selections: QuestionnaireDraftSelectionDto[];
 }
 
-export type QuestionnaireAnswerStateDto = QuestionnaireAnswerStateSlotDto[];
+export type QuestionnaireDraftAnswersDto = QuestionnaireDraftAnswerDto[];
 
-export type QuestionnaireAnswerMutationDto =
+export type QuestionnaireDraftAnswerMutationDto =
   | {
       type: "select_option";
       questionIndex: number;

@@ -1,9 +1,9 @@
 import type { QuestionnaireAnswerState } from "../../domain/questionnaire.js";
-import type { QuestionnaireAnswerStateDto } from "../dto/questionnaire-answer-state.js";
+import type { QuestionnaireDraftAnswersDto } from "../dto/questionnaire-draft-answers.js";
 
-export function toQuestionnaireAnswerStateDto(
+export function toQuestionnaireDraftAnswersDto(
   answerState: QuestionnaireAnswerState,
-): QuestionnaireAnswerStateDto {
+): QuestionnaireDraftAnswersDto {
   return answerState.map((slot) => ({
     selections: slot.selections.map((selection) => ({ ...selection })),
   }));

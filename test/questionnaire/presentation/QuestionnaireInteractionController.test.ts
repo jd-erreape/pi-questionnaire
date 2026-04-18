@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import type {
-  QuestionnaireAnswerMutationDto,
-  QuestionnaireAnswerStateDto,
-} from "../../../extensions/questionnaire/application/dto/questionnaire-answer-state.js";
+  QuestionnaireDraftAnswerMutationDto,
+  QuestionnaireDraftAnswersDto,
+} from "../../../extensions/questionnaire/application/dto/questionnaire-draft-answers.js";
 import type { QuestionnaireSubmissionIssueDto } from "../../../extensions/questionnaire/application/dto/questionnaire-issues.js";
 import type { QuestionnaireInstanceDto } from "../../../extensions/questionnaire/application/dto/questionnaire-instance.js";
 import {
@@ -64,15 +64,15 @@ function createMultiQuestionInstance(): QuestionnaireInstanceDto {
 }
 
 function createAnswerUpdateStub(
-  initialAnswers: QuestionnaireAnswerStateDto,
+  initialDraftAnswers: QuestionnaireDraftAnswersDto,
 ): UpdateQuestionnaireAnswerFunction {
-  let answers = cloneAnswerState(initialAnswers);
+  let draftAnswers = cloneDraftAnswers(initialDraftAnswers);
 
   return ({ mutation }) => {
-    answers = applyMutation(answers, mutation);
+    draftAnswers = applyMutation(draftAnswers, mutation);
     return {
       ok: true,
-      value: cloneAnswerState(answers),
+      value: cloneDraftAnswers(draftAnswers),
     };
   };
 }
@@ -82,7 +82,12 @@ function createSubmitSuccess(): SubmitQuestionnaireFunction {
     ok: true,
     value: {
       instance: createSingleSelectInstance(),
-      answers: [{ selections: ["React"], custom: false }],
+      responses: [
+        {
+          question: "Which frontend framework should I target?",
+          selections: ["React"],
+        },
+      ],
     },
   });
 }
@@ -104,7 +109,7 @@ function createCancelSuccess(): CancelQuestionnaireFunction {
 }
 
 describe("QuestionnaireInteractionController", () => {
-  it("initializes answer state locally and starts at question index 0", () => {
+  it("initializes draft answers locally and starts at question index 0", () => {
     const controller = new QuestionnaireInteractionController(
       createMultiQuestionInstance(),
       createAnswerUpdateStub([{ selections: [] }, { selections: [] }]),
@@ -114,12 +119,12 @@ describe("QuestionnaireInteractionController", () => {
 
     expect(controller.getState()).toEqual({
       currentQuestionIndex: 0,
-      answers: [{ selections: [] }, { selections: [] }],
+      draftAnswers: [{ selections: [] }, { selections: [] }],
       submissionIssues: undefined,
     });
   });
 
-  it("selecting an option updates the answers for a single-select question", () => {
+  it("selecting an option updates the draft answers for a single-select question", () => {
     const controller = new QuestionnaireInteractionController(
       createSingleSelectInstance(),
       createAnswerUpdateStub([{ selections: [] }]),
@@ -129,14 +134,14 @@ describe("QuestionnaireInteractionController", () => {
 
     controller.selectOption(0, "Vue");
 
-    expect(controller.getState().answers).toEqual([
+    expect(controller.getState().draftAnswers).toEqual([
       {
         selections: [{ source: "option", value: "Vue" }],
       },
     ]);
   });
 
-  it("toggling options updates the answers for a multi-select question", () => {
+  it("toggling options updates the draft answers for a multi-select question", () => {
     const controller = new QuestionnaireInteractionController(
       createMultiQuestionInstance(),
       createAnswerUpdateStub([{ selections: [] }, { selections: [] }]),
@@ -147,7 +152,7 @@ describe("QuestionnaireInteractionController", () => {
     controller.toggleOption(1, "Unit tests");
     controller.toggleOption(1, "E2E tests");
 
-    expect(controller.getState().answers[1]).toEqual({
+    expect(controller.getState().draftAnswers[1]).toEqual({
       selections: [
         { source: "option", value: "Unit tests" },
         { source: "option", value: "E2E tests" },
@@ -156,12 +161,12 @@ describe("QuestionnaireInteractionController", () => {
 
     controller.toggleOption(1, "Unit tests");
 
-    expect(controller.getState().answers[1]).toEqual({
+    expect(controller.getState().draftAnswers[1]).toEqual({
       selections: [{ source: "option", value: "E2E tests" }],
     });
   });
 
-  it("setting a custom answer updates the answers with custom provenance", () => {
+  it("setting a custom answer updates the draft answers with custom provenance", () => {
     const controller = new QuestionnaireInteractionController(
       createMultiQuestionInstance(),
       createAnswerUpdateStub([{ selections: [] }, { selections: [] }]),
@@ -171,12 +176,12 @@ describe("QuestionnaireInteractionController", () => {
 
     controller.setCustomAnswer(1, "Performance tests");
 
-    expect(controller.getState().answers[1]).toEqual({
+    expect(controller.getState().draftAnswers[1]).toEqual({
       selections: [{ source: "custom", value: "Performance tests" }],
     });
   });
 
-  it("clearing an answer empties the slot", () => {
+  it("clearing an answer empties the draft slot", () => {
     const controller = new QuestionnaireInteractionController(
       createSingleSelectInstance(),
       createAnswerUpdateStub([{ selections: [] }]),
@@ -187,7 +192,7 @@ describe("QuestionnaireInteractionController", () => {
     controller.selectOption(0, "React");
     controller.clearAnswer(0);
 
-    expect(controller.getState().answers).toEqual([{ selections: [] }]);
+    expect(controller.getState().draftAnswers).toEqual([{ selections: [] }]);
   });
 
   it("failed submit stores issues in controller state", () => {
@@ -229,7 +234,7 @@ describe("QuestionnaireInteractionController", () => {
     ]);
   });
 
-  it("successful submit returns finalized answers and clears previous issues", () => {
+  it("successful submit returns finalized responses and clears previous issues", () => {
     const instance = createSingleSelectInstance();
     let submitCalls: Array<{ sessionID: string; requestID: string }> = [];
     let callCount = 0;
@@ -253,7 +258,12 @@ describe("QuestionnaireInteractionController", () => {
         ok: true,
         value: {
           instance,
-          answers: [{ selections: ["React"], custom: false }],
+          responses: [
+            {
+              question: "Which frontend framework should I target?",
+              selections: ["React"],
+            },
+          ],
         },
       };
     };
@@ -273,7 +283,12 @@ describe("QuestionnaireInteractionController", () => {
       ok: true,
       value: {
         instance,
-        answers: [{ selections: ["React"], custom: false }],
+        responses: [
+          {
+            question: "Which frontend framework should I target?",
+            selections: ["React"],
+          },
+        ],
       },
     });
     expect(submitCalls).toEqual([
@@ -359,10 +374,10 @@ describe("QuestionnaireInteractionController", () => {
 });
 
 function applyMutation(
-  answers: QuestionnaireAnswerStateDto,
-  mutation: QuestionnaireAnswerMutationDto,
-): QuestionnaireAnswerStateDto {
-  const next = cloneAnswerState(answers);
+  draftAnswers: QuestionnaireDraftAnswersDto,
+  mutation: QuestionnaireDraftAnswerMutationDto,
+): QuestionnaireDraftAnswersDto {
+  const next = cloneDraftAnswers(draftAnswers);
   const slot = next[mutation.questionIndex];
 
   if (!slot) {
@@ -408,10 +423,10 @@ function applyMutation(
   }
 }
 
-function cloneAnswerState(
-  answers: QuestionnaireAnswerStateDto,
-): QuestionnaireAnswerStateDto {
-  return answers.map((slot) => ({
+function cloneDraftAnswers(
+  draftAnswers: QuestionnaireDraftAnswersDto,
+): QuestionnaireDraftAnswersDto {
+  return draftAnswers.map((slot) => ({
     selections: slot.selections.map((selection) => ({ ...selection })),
   }));
 }

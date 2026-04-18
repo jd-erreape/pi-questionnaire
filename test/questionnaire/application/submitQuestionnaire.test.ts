@@ -77,7 +77,7 @@ describe("submitQuestionnaire", () => {
     expect(store.get("session-1")).toBeDefined();
   });
 
-  it("returns the instance and submitted answers when submission succeeds", () => {
+  it("returns the instance and submitted responses when submission succeeds", () => {
     const store = new FakeActiveQuestionnaireStore();
     const questionnaire = createQuestionnaire();
     questionnaire.selectOption(0, "React");
@@ -111,7 +111,12 @@ describe("submitQuestionnaire", () => {
             },
           ],
         },
-        answers: [{ selections: ["React"], custom: false }],
+        responses: [
+          {
+            question: "Which frontend framework should I target?",
+            selections: ["React"],
+          },
+        ],
       },
     });
     expect(store.get("session-1")).toBeUndefined();

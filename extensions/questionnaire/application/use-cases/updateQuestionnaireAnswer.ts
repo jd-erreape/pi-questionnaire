@@ -1,16 +1,16 @@
 import { Result, type Result as ResultType } from "../../result.js";
 import type {
-  QuestionnaireAnswerMutationDto,
-  QuestionnaireAnswerStateDto,
-} from "../dto/questionnaire-answer-state.js";
+  QuestionnaireDraftAnswerMutationDto,
+  QuestionnaireDraftAnswersDto,
+} from "../dto/questionnaire-draft-answers.js";
 import { QuestionnaireNotActiveError } from "../errors.js";
-import { toQuestionnaireAnswerStateDto } from "../mappers/questionnaire-answer-state.js";
+import { toQuestionnaireDraftAnswersDto } from "../mappers/questionnaire-draft-answers.js";
 import type { ActiveQuestionnaireStore } from "../ports.js";
 
 export interface UpdateQuestionnaireAnswerCommand {
   sessionID: string;
   requestID: string;
-  mutation: QuestionnaireAnswerMutationDto;
+  mutation: QuestionnaireDraftAnswerMutationDto;
 }
 
 export interface UpdateQuestionnaireAnswerDependencies {
@@ -18,7 +18,7 @@ export interface UpdateQuestionnaireAnswerDependencies {
 }
 
 export type UpdateQuestionnaireAnswerResult = ResultType<
-  QuestionnaireAnswerStateDto,
+  QuestionnaireDraftAnswersDto,
   QuestionnaireNotActiveError
 >;
 
@@ -61,6 +61,6 @@ export function updateQuestionnaireAnswer(
   dependencies.activeQuestionnaireStore.save(questionnaire);
 
   return Result.ok(
-    toQuestionnaireAnswerStateDto(questionnaire.toAnswerState()),
+    toQuestionnaireDraftAnswersDto(questionnaire.toAnswerState()),
   );
 }

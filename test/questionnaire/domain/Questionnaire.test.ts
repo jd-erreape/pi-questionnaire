@@ -179,7 +179,7 @@ describe("Questionnaire", () => {
 
     expect(result).toEqual({
       ok: true,
-      value: [{ selections: ["React"], custom: false }],
+      value: [{ selections: ["React"] }],
     });
   });
 
@@ -209,7 +209,7 @@ describe("Questionnaire", () => {
 
     expect(result).toEqual({
       ok: true,
-      value: [{ selections: ["Unit tests", "E2E tests"], custom: false }],
+      value: [{ selections: ["Unit tests", "E2E tests"] }],
     });
   });
 
@@ -233,7 +233,7 @@ describe("Questionnaire", () => {
 
     expect(result).toEqual({
       ok: true,
-      value: [{ selections: [], custom: false }],
+      value: [{ selections: [] }],
     });
   });
 
@@ -309,32 +309,6 @@ describe("Questionnaire", () => {
     ]);
   });
 
-  it("derives custom true when any selection is custom", () => {
-    const questionnaire = startQuestionnaire(
-      createDefinition({
-        questions: [
-          {
-            header: "Framework",
-            question: "Which frontend framework should I target?",
-            options: [{ label: "React" }, { label: "Vue" }],
-            multiSelect: true,
-            allowCustom: true,
-            required: true,
-          },
-        ],
-      }),
-    );
-    questionnaire.toggleOption(0, "React");
-    questionnaire.setCustomAnswer(0, "Svelte");
-
-    const result = questionnaire.submit();
-
-    expect(result).toEqual({
-      ok: true,
-      value: [{ selections: ["React", "Svelte"], custom: true }],
-    });
-  });
-
   it("preserves slot order and selection order", () => {
     const questionnaire = startQuestionnaire(multiQuestionDefinition);
     questionnaire.selectOption(0, "Vue");
@@ -347,10 +321,9 @@ describe("Questionnaire", () => {
     expect(result).toEqual({
       ok: true,
       value: [
-        { selections: ["Vue"], custom: false },
+        { selections: ["Vue"] },
         {
           selections: ["Integration tests", "Performance tests", "Unit tests"],
-          custom: true,
         },
       ],
     });

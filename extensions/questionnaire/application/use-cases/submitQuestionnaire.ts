@@ -1,5 +1,5 @@
-import type { QuestionnaireAnswerDto } from "../../contract/result.js";
 import { Result, type Result as ResultType } from "../../result.js";
+import type { SubmittedQuestionnaireDto } from "../dto/questionnaire-submission.js";
 import {
   InvalidQuestionnaireAnswersError,
   QuestionnaireNotActiveError,
@@ -17,10 +17,7 @@ export interface SubmitQuestionnaireDependencies {
 }
 
 export type SubmitQuestionnaireResult = ResultType<
-  {
-    instance: ReturnType<typeof toQuestionnaireInstanceDto>;
-    answers: QuestionnaireAnswerDto[];
-  },
+  SubmittedQuestionnaireDto,
   InvalidQuestionnaireAnswersError | QuestionnaireNotActiveError
 >;
 
@@ -44,13 +41,15 @@ export function submitQuestionnaire(
     );
   }
 
+  const instance = toQuestionnaireInstanceDto(questionnaire);
+
   dependencies.activeQuestionnaireStore.delete(command.sessionID);
 
   return Result.ok({
-    instance: toQuestionnaireInstanceDto(questionnaire),
-    answers: submissionResult.value.map((answer) => ({
+    instance,
+    responses: submissionResult.value.map((answer, index) => ({
+      question: instance.questions[index]?.question ?? "",
       selections: [...answer.selections],
-      custom: answer.custom,
     })),
   });
 }

@@ -1,7 +1,7 @@
 import type {
-  QuestionnaireAnswerStateDto,
-  QuestionnaireAnswerStateSlotDto,
-} from "../../application/dto/questionnaire-answer-state.js";
+  QuestionnaireDraftAnswerDto,
+  QuestionnaireDraftAnswersDto,
+} from "../../application/dto/questionnaire-draft-answers.js";
 import type { QuestionnaireInstanceDto } from "../../application/dto/questionnaire-instance.js";
 import type { QuestionnaireSubmissionIssueDto } from "../../application/dto/questionnaire-issues.js";
 import {
@@ -37,14 +37,14 @@ export type { SubmitQuestionnaireResult, CancelQuestionnaireResult };
 
 export interface QuestionnaireInteractionState {
   currentQuestionIndex: number;
-  answers: QuestionnaireAnswerStateDto;
+  draftAnswers: QuestionnaireDraftAnswersDto;
   submissionIssues?: QuestionnaireSubmissionIssueDto[];
 }
 
 export class QuestionnaireInteractionController {
   private readonly sessionID: string;
   private readonly requestID: string;
-  private answers: QuestionnaireAnswerStateDto;
+  private draftAnswers: QuestionnaireDraftAnswersDto;
   private currentQuestionIndex = 0;
   private submissionIssues: QuestionnaireSubmissionIssueDto[] | undefined;
 
@@ -56,7 +56,7 @@ export class QuestionnaireInteractionController {
   ) {
     this.sessionID = instance.sessionID;
     this.requestID = instance.requestID;
-    this.answers = instance.questions.map<QuestionnaireAnswerStateSlotDto>(
+    this.draftAnswers = instance.questions.map<QuestionnaireDraftAnswerDto>(
       () => ({
         selections: [],
       }),
@@ -66,7 +66,7 @@ export class QuestionnaireInteractionController {
   getState(): QuestionnaireInteractionState {
     return {
       currentQuestionIndex: this.currentQuestionIndex,
-      answers: cloneAnswerState(this.answers),
+      draftAnswers: cloneDraftAnswers(this.draftAnswers),
       submissionIssues: this.submissionIssues,
     };
   }
@@ -175,14 +175,14 @@ export class QuestionnaireInteractionController {
       throw new Error(result.error.message);
     }
 
-    this.answers = result.value;
+    this.draftAnswers = result.value;
   }
 }
 
-function cloneAnswerState(
-  answers: QuestionnaireAnswerStateDto,
-): QuestionnaireAnswerStateDto {
-  return answers.map((slot) => ({
+function cloneDraftAnswers(
+  draftAnswers: QuestionnaireDraftAnswersDto,
+): QuestionnaireDraftAnswersDto {
+  return draftAnswers.map((slot) => ({
     selections: slot.selections.map((selection) => ({ ...selection })),
   }));
 }

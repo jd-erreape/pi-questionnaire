@@ -1,6 +1,6 @@
-export interface QuestionnaireAnswerDto {
+export interface QuestionnaireSubmittedResponseDto {
+  question: string;
   selections: string[];
-  custom: boolean;
 }
 
 export interface QuestionnaireNormalizedOptionDto {
@@ -19,10 +19,7 @@ export interface QuestionnaireNormalizedQuestionDto {
 
 export interface QuestionnaireSuccessDetailsDto {
   status: "submitted";
-  title?: string;
-  instructions?: string;
-  questions: QuestionnaireNormalizedQuestionDto[];
-  answers: QuestionnaireAnswerDto[];
+  responses: QuestionnaireSubmittedResponseDto[];
 }
 
 export interface QuestionnaireFailureDetailsDto {

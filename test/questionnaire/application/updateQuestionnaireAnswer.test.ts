@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { ActiveQuestionnaireStore } from "../../../extensions/questionnaire/application/ports.js";
-import type { QuestionnaireAnswerMutationDto } from "../../../extensions/questionnaire/application/dto/questionnaire-answer-state.js";
+import type { QuestionnaireDraftAnswerMutationDto } from "../../../extensions/questionnaire/application/dto/questionnaire-draft-answers.js";
 import { updateQuestionnaireAnswer } from "../../../extensions/questionnaire/application/use-cases/updateQuestionnaireAnswer.js";
 import { Questionnaire } from "../../../extensions/questionnaire/domain/questionnaire.js";
 
@@ -69,7 +69,7 @@ function createMultiSelectQuestionnaire(): Questionnaire {
 
 function applyMutation(
   store: FakeActiveQuestionnaireStore,
-  mutation: QuestionnaireAnswerMutationDto,
+  mutation: QuestionnaireDraftAnswerMutationDto,
 ) {
   return updateQuestionnaireAnswer(
     {
