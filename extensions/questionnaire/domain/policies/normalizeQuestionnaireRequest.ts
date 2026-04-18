@@ -1,8 +1,8 @@
-import type { QuestionnaireRequestDto } from "../../contract/request.js";
+import type { QuestionnaireInputDto } from "../../application/dto/questionnaire-input.js";
 import type { QuestionnaireDefinition } from "../definition.js";
 
 export function normalizeQuestionnaireRequest(
-  request: QuestionnaireRequestDto,
+  request: QuestionnaireInputDto,
 ): QuestionnaireDefinition {
   const title = trimOptionalString(request.title);
   const instructions = trimOptionalString(request.instructions);

@@ -1,8 +1,8 @@
+import type { QuestionnaireOptionDto } from "../../application/dto/questionnaire-definition.js";
 import type {
-  QuestionnaireOptionDto,
-  QuestionnaireQuestionDto,
-  QuestionnaireRequestDto,
-} from "../../contract/request.js";
+  QuestionnaireInputDto,
+  QuestionnaireInputQuestionDto,
+} from "../../application/dto/questionnaire-input.js";
 import { Result } from "../../result.js";
 import {
   QuestionnaireValidationError,
@@ -23,7 +23,7 @@ const OPTION_FIELDS = new Set(["label", "description"]);
 
 export function validateQuestionnaireRequest(
   input: unknown,
-): ValidationResult<QuestionnaireRequestDto> {
+): ValidationResult<QuestionnaireInputDto> {
   if (!isRecord(input)) {
     return Result.error(
       new QuestionnaireValidationError([
@@ -55,7 +55,7 @@ export function validateQuestionnaireRequest(
     return Result.error(new QuestionnaireValidationError(issues));
   }
 
-  return Result.ok(toQuestionnaireRequestDto(input));
+  return Result.ok(toQuestionnaireInputDto(input));
 }
 
 function validateQuestionArray(
@@ -269,11 +269,11 @@ function validateOptionalBooleanField(
   }
 }
 
-function toQuestionnaireRequestDto(
+function toQuestionnaireInputDto(
   input: Record<string, unknown>,
-): QuestionnaireRequestDto {
+): QuestionnaireInputDto {
   const questions = (input.questions as unknown[]).map((question) =>
-    toQuestionnaireQuestionDto(question as Record<string, unknown>),
+    toQuestionnaireInputQuestionDto(question as Record<string, unknown>),
   );
 
   return {
@@ -285,9 +285,9 @@ function toQuestionnaireRequestDto(
   };
 }
 
-function toQuestionnaireQuestionDto(
+function toQuestionnaireInputQuestionDto(
   question: Record<string, unknown>,
-): QuestionnaireQuestionDto {
+): QuestionnaireInputQuestionDto {
   return {
     header: question.header as string,
     question: question.question as string,

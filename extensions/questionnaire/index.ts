@@ -25,7 +25,7 @@ import type {
   QuestionnaireDetailsDto,
   QuestionnaireSuccessDetailsDto,
   QuestionnaireValidationFailureDetailsDto,
-} from "./contract/result.js";
+} from "./application/dto/questionnaire-result.js";
 import { InMemoryActiveQuestionnaireStore } from "./infrastructure/runtime/InMemoryActiveQuestionnaireStore.js";
 import { RandomIdGenerator } from "./infrastructure/runtime/RandomIdGenerator.js";
 import {
@@ -72,7 +72,7 @@ const questionnaireQuestionSchema = Type.Object(
     multiSelect: Type.Optional(
       Type.Boolean({
         description:
-          "Set true only when the user should be allowed to choose multiple options.",
+          "Default to true use it only when the user should be allowed to choose multiple options, otherwise set to false",
       }),
     ),
     allowCustom: Type.Optional(
@@ -137,6 +137,8 @@ const QUESTIONNAIRE_TOOL: ToolDefinition<
   async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
     const sessionID = getSessionID(ctx);
 
+    // TODO: I have my doubts we should be calling startQuestionnaire directly here, an option would
+    // be to also allow the view model to create the initial questionnaire, we'd need to inject the deps though
     const startResult = startQuestionnaire(
       {
         input: params,
@@ -176,6 +178,7 @@ const QUESTIONNAIRE_TOOL: ToolDefinition<
         ? mapSubmittedOutcome(outcome.result)
         : mapCancelledOutcome(outcome.result);
     } finally {
+      // TODO: This should not be accessing the store directly, we need a use case and the view model to proxy it
       activeQuestionnaireStore.delete(sessionID);
     }
   },
@@ -282,31 +285,23 @@ function mapSubmittedOutcome(
 function mapCancelledOutcome(
   questionnaire: QuestionnaireDto,
 ): QuestionnaireToolResult<QuestionnaireCancelledDetailsDto> {
+  const definition = {
+    ...(questionnaire.title !== undefined
+      ? { title: questionnaire.title }
+      : {}),
+    ...(questionnaire.instructions !== undefined
+      ? { instructions: questionnaire.instructions }
+      : {}),
+    questions: questionnaire.questions,
+  };
+
   const result: QuestionnaireToolResult<QuestionnaireCancelledDetailsDto> = {
     isError: true,
     content: [{ type: "text", text: "Questionnaire cancelled by user." }],
     details: {
       status: "cancelled",
       reason: "user_cancelled",
-      ...(questionnaire.title !== undefined
-        ? { title: questionnaire.title }
-        : {}),
-      ...(questionnaire.instructions !== undefined
-        ? { instructions: questionnaire.instructions }
-        : {}),
-      questions: questionnaire.questions.map((question) => ({
-        header: question.header,
-        question: question.question,
-        options: question.options.map((option) => ({
-          label: option.label,
-          ...(option.description !== undefined
-            ? { description: option.description }
-            : {}),
-        })),
-        multiSelect: question.multiSelect,
-        allowCustom: question.allowCustom,
-        required: question.required,
-      })),
+      ...definition,
     },
   };
 

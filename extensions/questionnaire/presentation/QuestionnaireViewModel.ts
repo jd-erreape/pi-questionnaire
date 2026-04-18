@@ -4,10 +4,10 @@ import type {
 } from "../application/dto/questionnaire-draft-answers.js";
 import type { QuestionnaireSubmissionIssueDto } from "../application/dto/questionnaire-issues.js";
 import type {
-  QuestionnaireDto,
   QuestionnaireOptionDto,
   QuestionnaireQuestionDto,
-} from "../application/dto/questionnaire.js";
+} from "../application/dto/questionnaire-definition.js";
+import type { QuestionnaireDto } from "../application/dto/questionnaire.js";
 import {
   InvalidQuestionnaireAnswersError,
   QuestionnaireNotActiveError,

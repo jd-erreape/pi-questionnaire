@@ -1,24 +1,8 @@
 import type { QuestionnaireDraftAnswersDto } from "./questionnaire-draft-answers.js";
+import type { QuestionnaireDefinitionDto } from "./questionnaire-definition.js";
+import type { QuestionnaireMetadataDto } from "./questionnaire-metadata.js";
 
-export interface QuestionnaireOptionDto {
-  label: string;
-  description?: string;
-}
-
-export interface QuestionnaireQuestionDto {
-  header: string;
-  question: string;
-  options: QuestionnaireOptionDto[];
-  multiSelect: boolean;
-  allowCustom: boolean;
-  required: boolean;
-}
-
-export interface QuestionnaireDto {
-  requestID: string;
-  sessionID: string;
-  title?: string;
-  instructions?: string;
-  questions: QuestionnaireQuestionDto[];
+export interface QuestionnaireDto
+  extends QuestionnaireMetadataDto, QuestionnaireDefinitionDto {
   draftAnswers: QuestionnaireDraftAnswersDto;
 }
