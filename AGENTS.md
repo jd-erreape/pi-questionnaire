@@ -111,18 +111,33 @@ Prefer pure unit tests for domain/runtime logic. Keep UI-specific tests narrower
 - If a feature depends on interactive TUI behavior, it must fail fast in unsupported modes rather than hang.
 - Prefer source-first TypeScript unless a build step is clearly needed.
 
+## Canonical questionnaire docs
+
+For any implementation, refactor, or test change related to the `questionnaire` package:
+
+- read `docs/spec.md` as the canonical behavioral contract
+- read `docs/architecture.md` as the canonical code organization and layering guide
+- do not silently implement behavior that contradicts those docs
+- if code and docs disagree, treat the docs as canonical unless the task explicitly includes updating them
+- if intended behavior changes, update the relevant docs first or in the same change
+
 ## Architecture rules
 
+- Follow the layered architecture defined in `docs/architecture.md`.
 - Keep UI architecture framework-independent.
 - Domain/runtime logic must not depend directly on a specific UI rendering approach.
 - UI should consume stable contract types and view-model-like state, not own the business rules.
 - Prefer small composable modules over large monolithic extension files.
 - Preserve clear separation between:
-  - schema/validation
-  - normalization
-  - runtime/state
-  - Pi extension glue
-  - TUI rendering
+  - contract
+  - domain
+  - application
+  - infrastructure
+  - presentation
+- Keep request/result contract DTOs separate from internal domain models.
+- Do not import Pi APIs into `domain`.
+- Do not place domain policy in `infrastructure`.
+- Do not place core questionnaire rules in `presentation`.
 
 ## Dependency policy
 
@@ -150,6 +165,9 @@ For Pi-specific libraries used by the package, prefer the packaging conventions 
 - changes to the public tool contract
 - CI/release workflow changes with broad impact
 - destructive file moves or deletions
+- steering the implementation in a way that changes scope, sequencing, or architecture beyond the user's explicit request
+
+When steering may be helpful, present the proposed direction clearly and wait for explicit human consent before proceeding.
 
 ### Never
 
