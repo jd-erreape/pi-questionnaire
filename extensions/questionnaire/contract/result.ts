@@ -3,44 +3,15 @@ export interface QuestionnaireSubmittedResponseDto {
   selections: string[];
 }
 
-export interface QuestionnaireNormalizedOptionDto {
-  label: string;
-  description?: string;
-}
-
-export interface QuestionnaireNormalizedQuestionDto {
-  header: string;
-  question: string;
-  options: QuestionnaireNormalizedOptionDto[];
-  multiSelect: boolean;
-  allowCustom: boolean;
-  required: boolean;
-}
-
 export interface QuestionnaireSuccessDetailsDto {
   status: "submitted";
   responses: QuestionnaireSubmittedResponseDto[];
 }
 
-export interface QuestionnaireFailureDetailsDto {
+export interface QuestionnaireValidationFailureDetailsDto {
   status: "failed";
-  reason:
-    | "invalid_request"
-    | "interactive_ui_required"
-    | "questionnaire_already_active";
-}
-
-export interface QuestionnaireValidationFailureDetailsDto extends QuestionnaireFailureDetailsDto {
   reason: "invalid_request";
   errors: string[];
-}
-
-export interface QuestionnaireInteractiveFailureDetailsDto extends QuestionnaireFailureDetailsDto {
-  reason: "interactive_ui_required";
-}
-
-export interface QuestionnaireConcurrencyFailureDetailsDto extends QuestionnaireFailureDetailsDto {
-  reason: "questionnaire_already_active";
 }
 
 export interface QuestionnaireCancelledDetailsDto {
@@ -48,12 +19,28 @@ export interface QuestionnaireCancelledDetailsDto {
   reason: "user_cancelled";
   title?: string;
   instructions?: string;
-  questions: QuestionnaireNormalizedQuestionDto[];
+  questions: Array<{
+    header: string;
+    question: string;
+    options: Array<{
+      label: string;
+      description?: string;
+    }>;
+    multiSelect: boolean;
+    allowCustom: boolean;
+    required: boolean;
+  }>;
 }
 
 export type QuestionnaireDetailsDto =
   | QuestionnaireSuccessDetailsDto
   | QuestionnaireValidationFailureDetailsDto
-  | QuestionnaireInteractiveFailureDetailsDto
-  | QuestionnaireConcurrencyFailureDetailsDto
+  | {
+      status: "failed";
+      reason: "interactive_ui_required";
+    }
+  | {
+      status: "failed";
+      reason: "questionnaire_already_active";
+    }
   | QuestionnaireCancelledDetailsDto;

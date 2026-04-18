@@ -7,7 +7,7 @@ import type {
   ToolRenderResultOptions,
 } from "@mariozechner/pi-coding-agent";
 import { Text } from "@mariozechner/pi-tui";
-import { Type, type Static } from "@sinclair/typebox";
+import { Type } from "@sinclair/typebox";
 
 import type { QuestionnaireDto } from "./application/dto/questionnaire.js";
 import type { SubmittedQuestionnaireDto } from "./application/dto/questionnaire-submission.js";
@@ -20,7 +20,6 @@ import { cancelQuestionnaire } from "./application/use-cases/cancelQuestionnaire
 import { startQuestionnaire } from "./application/use-cases/startQuestionnaire.js";
 import { submitQuestionnaire } from "./application/use-cases/submitQuestionnaire.js";
 import { updateQuestionnaireAnswer } from "./application/use-cases/updateQuestionnaireAnswer.js";
-import type { QuestionnaireRequestDto } from "./contract/request.js";
 import type {
   QuestionnaireCancelledDetailsDto,
   QuestionnaireDetailsDto,
@@ -364,6 +363,3 @@ function renderQuestionnaireResult(
       return new Text(theme.fg("error", details.reason), 0, 0);
   }
 }
-
-export type QuestionnaireToolParams = Static<typeof questionnaireRequestSchema>;
-export type { QuestionnaireRequestDto };
