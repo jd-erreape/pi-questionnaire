@@ -5,7 +5,7 @@ import type {
   QuestionnaireDraftAnswersDto,
 } from "../../../extensions/questionnaire/application/dto/questionnaire-draft-answers.js";
 import type { QuestionnaireSubmissionIssueDto } from "../../../extensions/questionnaire/application/dto/questionnaire-issues.js";
-import type { QuestionnaireInstanceDto } from "../../../extensions/questionnaire/application/dto/questionnaire-instance.js";
+import type { QuestionnaireDto } from "../../../extensions/questionnaire/application/dto/questionnaire.js";
 import {
   InvalidQuestionnaireAnswersError,
   QuestionnaireNotActiveError,
@@ -17,7 +17,7 @@ import type {
 } from "../../../extensions/questionnaire/presentation/controller/QuestionnaireInteractionController.js";
 import { QuestionnaireInteractionController } from "../../../extensions/questionnaire/presentation/controller/QuestionnaireInteractionController.js";
 
-function createSingleSelectInstance(): QuestionnaireInstanceDto {
+function createSingleSelectQuestionnaire(): QuestionnaireDto {
   return {
     requestID: "req-123",
     sessionID: "session-1",
@@ -31,10 +31,11 @@ function createSingleSelectInstance(): QuestionnaireInstanceDto {
         required: true,
       },
     ],
+    draftAnswers: [{ selections: [] }],
   };
 }
 
-function createMultiQuestionInstance(): QuestionnaireInstanceDto {
+function createMultiQuestionQuestionnaire(): QuestionnaireDto {
   return {
     requestID: "req-123",
     sessionID: "session-1",
@@ -60,19 +61,23 @@ function createMultiQuestionInstance(): QuestionnaireInstanceDto {
         required: false,
       },
     ],
+    draftAnswers: [{ selections: [] }, { selections: [] }],
   };
 }
 
 function createAnswerUpdateStub(
-  initialDraftAnswers: QuestionnaireDraftAnswersDto,
+  initialQuestionnaire: QuestionnaireDto,
 ): UpdateQuestionnaireAnswerFunction {
-  let draftAnswers = cloneDraftAnswers(initialDraftAnswers);
+  let draftAnswers = cloneDraftAnswers(initialQuestionnaire.draftAnswers);
 
   return ({ mutation }) => {
     draftAnswers = applyMutation(draftAnswers, mutation);
     return {
       ok: true,
-      value: cloneDraftAnswers(draftAnswers),
+      value: {
+        ...initialQuestionnaire,
+        draftAnswers: cloneDraftAnswers(draftAnswers),
+      },
     };
   };
 }
@@ -81,7 +86,14 @@ function createSubmitSuccess(): SubmitQuestionnaireFunction {
   return () => ({
     ok: true,
     value: {
-      instance: createSingleSelectInstance(),
+      questionnaire: {
+        ...createSingleSelectQuestionnaire(),
+        draftAnswers: [
+          {
+            selections: [{ source: "option", value: "React" }],
+          },
+        ],
+      },
       responses: [
         {
           question: "Which frontend framework should I target?",
@@ -104,15 +116,15 @@ function createSubmitFailure(
 function createCancelSuccess(): CancelQuestionnaireFunction {
   return () => ({
     ok: true,
-    value: createSingleSelectInstance(),
+    value: createSingleSelectQuestionnaire(),
   });
 }
 
 describe("QuestionnaireInteractionController", () => {
-  it("initializes draft answers locally and starts at question index 0", () => {
+  it("initializes from the questionnaire draft answers and starts at question index 0", () => {
     const controller = new QuestionnaireInteractionController(
-      createMultiQuestionInstance(),
-      createAnswerUpdateStub([{ selections: [] }, { selections: [] }]),
+      createMultiQuestionQuestionnaire(),
+      createAnswerUpdateStub(createMultiQuestionQuestionnaire()),
       createSubmitSuccess(),
       createCancelSuccess(),
     );
@@ -126,8 +138,8 @@ describe("QuestionnaireInteractionController", () => {
 
   it("selecting an option updates the draft answers for a single-select question", () => {
     const controller = new QuestionnaireInteractionController(
-      createSingleSelectInstance(),
-      createAnswerUpdateStub([{ selections: [] }]),
+      createSingleSelectQuestionnaire(),
+      createAnswerUpdateStub(createSingleSelectQuestionnaire()),
       createSubmitSuccess(),
       createCancelSuccess(),
     );
@@ -143,8 +155,8 @@ describe("QuestionnaireInteractionController", () => {
 
   it("toggling options updates the draft answers for a multi-select question", () => {
     const controller = new QuestionnaireInteractionController(
-      createMultiQuestionInstance(),
-      createAnswerUpdateStub([{ selections: [] }, { selections: [] }]),
+      createMultiQuestionQuestionnaire(),
+      createAnswerUpdateStub(createMultiQuestionQuestionnaire()),
       createSubmitSuccess(),
       createCancelSuccess(),
     );
@@ -168,8 +180,8 @@ describe("QuestionnaireInteractionController", () => {
 
   it("setting a custom answer updates the draft answers with custom provenance", () => {
     const controller = new QuestionnaireInteractionController(
-      createMultiQuestionInstance(),
-      createAnswerUpdateStub([{ selections: [] }, { selections: [] }]),
+      createMultiQuestionQuestionnaire(),
+      createAnswerUpdateStub(createMultiQuestionQuestionnaire()),
       createSubmitSuccess(),
       createCancelSuccess(),
     );
@@ -183,8 +195,8 @@ describe("QuestionnaireInteractionController", () => {
 
   it("clearing an answer empties the draft slot", () => {
     const controller = new QuestionnaireInteractionController(
-      createSingleSelectInstance(),
-      createAnswerUpdateStub([{ selections: [] }]),
+      createSingleSelectQuestionnaire(),
+      createAnswerUpdateStub(createSingleSelectQuestionnaire()),
       createSubmitSuccess(),
       createCancelSuccess(),
     );
@@ -197,8 +209,8 @@ describe("QuestionnaireInteractionController", () => {
 
   it("failed submit stores issues in controller state", () => {
     const controller = new QuestionnaireInteractionController(
-      createSingleSelectInstance(),
-      createAnswerUpdateStub([{ selections: [] }]),
+      createSingleSelectQuestionnaire(),
+      createAnswerUpdateStub(createSingleSelectQuestionnaire()),
       createSubmitFailure([
         {
           questionIndex: 0,
@@ -235,7 +247,14 @@ describe("QuestionnaireInteractionController", () => {
   });
 
   it("successful submit returns finalized responses and clears previous issues", () => {
-    const instance = createSingleSelectInstance();
+    const questionnaire: QuestionnaireDto = {
+      ...createSingleSelectQuestionnaire(),
+      draftAnswers: [
+        {
+          selections: [{ source: "option", value: "React" }],
+        },
+      ],
+    };
     let submitCalls: Array<{ sessionID: string; requestID: string }> = [];
     let callCount = 0;
     const submitQuestionnaire: SubmitQuestionnaireFunction = (command) => {
@@ -257,7 +276,7 @@ describe("QuestionnaireInteractionController", () => {
       return {
         ok: true,
         value: {
-          instance,
+          questionnaire,
           responses: [
             {
               question: "Which frontend framework should I target?",
@@ -268,8 +287,8 @@ describe("QuestionnaireInteractionController", () => {
       };
     };
     const controller = new QuestionnaireInteractionController(
-      instance,
-      createAnswerUpdateStub([{ selections: [] }]),
+      createSingleSelectQuestionnaire(),
+      createAnswerUpdateStub(createSingleSelectQuestionnaire()),
       submitQuestionnaire,
       createCancelSuccess(),
     );
@@ -282,7 +301,7 @@ describe("QuestionnaireInteractionController", () => {
     expect(result).toEqual({
       ok: true,
       value: {
-        instance,
+        questionnaire,
         responses: [
           {
             question: "Which frontend framework should I target?",
@@ -300,8 +319,8 @@ describe("QuestionnaireInteractionController", () => {
 
   it("any mutation after a failed submit clears previous issues", () => {
     const controller = new QuestionnaireInteractionController(
-      createSingleSelectInstance(),
-      createAnswerUpdateStub([{ selections: [] }]),
+      createSingleSelectQuestionnaire(),
+      createAnswerUpdateStub(createSingleSelectQuestionnaire()),
       createSubmitFailure([
         {
           questionIndex: 0,
@@ -317,33 +336,33 @@ describe("QuestionnaireInteractionController", () => {
     expect(controller.getState().submissionIssues).toBeUndefined();
   });
 
-  it("cancels the active questionnaire and returns its instance data", () => {
-    const instance = createSingleSelectInstance();
+  it("cancels the active questionnaire and returns its questionnaire data", () => {
+    const questionnaire = createSingleSelectQuestionnaire();
     const cancelQuestionnaire: CancelQuestionnaireFunction = (command) => ({
       ok: true,
       value: {
-        ...instance,
+        ...questionnaire,
         requestID: command.requestID,
         sessionID: command.sessionID,
       },
     });
     const controller = new QuestionnaireInteractionController(
-      instance,
-      createAnswerUpdateStub([{ selections: [] }]),
+      createSingleSelectQuestionnaire(),
+      createAnswerUpdateStub(createSingleSelectQuestionnaire()),
       createSubmitSuccess(),
       cancelQuestionnaire,
     );
 
     expect(controller.cancel()).toEqual({
       ok: true,
-      value: instance,
+      value: questionnaire,
     });
   });
 
   it("throws when cancel reports no active questionnaire", () => {
     const controller = new QuestionnaireInteractionController(
-      createSingleSelectInstance(),
-      createAnswerUpdateStub([{ selections: [] }]),
+      createSingleSelectQuestionnaire(),
+      createAnswerUpdateStub(createSingleSelectQuestionnaire()),
       createSubmitSuccess(),
       () => ({
         ok: false,
@@ -358,7 +377,7 @@ describe("QuestionnaireInteractionController", () => {
 
   it("throws when a mutation result reports no active questionnaire", () => {
     const controller = new QuestionnaireInteractionController(
-      createSingleSelectInstance(),
+      createSingleSelectQuestionnaire(),
       () => ({
         ok: false,
         error: new QuestionnaireNotActiveError(),

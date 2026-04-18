@@ -1,10 +1,15 @@
-import type { QuestionnaireDefinition } from "../../domain/definition.js";
-import type { QuestionnaireDefinitionDto } from "../dto/questionnaire-definition.js";
+import type { Questionnaire } from "../../domain/questionnaire.js";
+import type { QuestionnaireDto } from "../dto/questionnaire.js";
 
-export function toQuestionnaireDefinitionDto(
-  definition: QuestionnaireDefinition,
-): QuestionnaireDefinitionDto {
+export function toQuestionnaireDto(
+  questionnaire: Questionnaire,
+): QuestionnaireDto {
+  const definition = questionnaire.getDefinition();
+  const draftAnswers = questionnaire.toAnswerState();
+
   return {
+    requestID: questionnaire.getRequestID(),
+    sessionID: questionnaire.getSessionID(),
     ...(definition.title !== undefined ? { title: definition.title } : {}),
     ...(definition.instructions !== undefined
       ? { instructions: definition.instructions }
@@ -21,6 +26,9 @@ export function toQuestionnaireDefinitionDto(
       multiSelect: question.multiSelect,
       allowCustom: question.allowCustom,
       required: question.required,
+    })),
+    draftAnswers: draftAnswers.map((slot) => ({
+      selections: slot.selections.map((selection) => ({ ...selection })),
     })),
   };
 }

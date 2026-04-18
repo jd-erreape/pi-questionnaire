@@ -1,7 +1,7 @@
 import { Result, type Result as ResultType } from "../../result.js";
+import type { QuestionnaireDto } from "../dto/questionnaire.js";
 import { QuestionnaireNotActiveError } from "../errors.js";
-import { toQuestionnaireInstanceDto } from "../mappers/questionnaire-instance.js";
-import type { QuestionnaireInstanceDto } from "../dto/questionnaire-instance.js";
+import { toQuestionnaireDto } from "../mappers/questionnaire.js";
 import type { ActiveQuestionnaireStore } from "../ports.js";
 
 export interface CancelQuestionnaireCommand {
@@ -14,7 +14,7 @@ export interface CancelQuestionnaireDependencies {
 }
 
 export type CancelQuestionnaireResult = ResultType<
-  QuestionnaireInstanceDto,
+  QuestionnaireDto,
   QuestionnaireNotActiveError
 >;
 
@@ -32,5 +32,5 @@ export function cancelQuestionnaire(
 
   dependencies.activeQuestionnaireStore.delete(command.sessionID);
 
-  return Result.ok(toQuestionnaireInstanceDto(questionnaire));
+  return Result.ok(toQuestionnaireDto(questionnaire));
 }

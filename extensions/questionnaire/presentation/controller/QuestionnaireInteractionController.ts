@@ -1,9 +1,6 @@
-import type {
-  QuestionnaireDraftAnswerDto,
-  QuestionnaireDraftAnswersDto,
-} from "../../application/dto/questionnaire-draft-answers.js";
-import type { QuestionnaireInstanceDto } from "../../application/dto/questionnaire-instance.js";
+import type { QuestionnaireDraftAnswersDto } from "../../application/dto/questionnaire-draft-answers.js";
 import type { QuestionnaireSubmissionIssueDto } from "../../application/dto/questionnaire-issues.js";
+import type { QuestionnaireDto } from "../../application/dto/questionnaire.js";
 import {
   InvalidQuestionnaireAnswersError,
   QuestionnaireNotActiveError,
@@ -42,31 +39,20 @@ export interface QuestionnaireInteractionState {
 }
 
 export class QuestionnaireInteractionController {
-  private readonly sessionID: string;
-  private readonly requestID: string;
-  private draftAnswers: QuestionnaireDraftAnswersDto;
   private currentQuestionIndex = 0;
   private submissionIssues: QuestionnaireSubmissionIssueDto[] | undefined;
 
   constructor(
-    private readonly instance: QuestionnaireInstanceDto,
+    private questionnaire: QuestionnaireDto,
     private readonly updateQuestionnaireAnswer: UpdateQuestionnaireAnswerFunction,
     private readonly submitQuestionnaire: SubmitQuestionnaireFunction,
     private readonly cancelQuestionnaire: CancelQuestionnaireFunction,
-  ) {
-    this.sessionID = instance.sessionID;
-    this.requestID = instance.requestID;
-    this.draftAnswers = instance.questions.map<QuestionnaireDraftAnswerDto>(
-      () => ({
-        selections: [],
-      }),
-    );
-  }
+  ) {}
 
   getState(): QuestionnaireInteractionState {
     return {
       currentQuestionIndex: this.currentQuestionIndex,
-      draftAnswers: cloneDraftAnswers(this.draftAnswers),
+      draftAnswers: cloneDraftAnswers(this.questionnaire.draftAnswers),
       submissionIssues: this.submissionIssues,
     };
   }
@@ -74,7 +60,7 @@ export class QuestionnaireInteractionController {
   nextQuestion(): void {
     this.currentQuestionIndex = Math.min(
       this.currentQuestionIndex + 1,
-      this.instance.questions.length - 1,
+      this.questionnaire.questions.length - 1,
     );
   }
 
@@ -84,8 +70,8 @@ export class QuestionnaireInteractionController {
 
   selectOption(questionIndex: number, label: string): void {
     this.applyMutation({
-      sessionID: this.sessionID,
-      requestID: this.requestID,
+      sessionID: this.questionnaire.sessionID,
+      requestID: this.questionnaire.requestID,
       mutation: {
         type: "select_option",
         questionIndex,
@@ -96,8 +82,8 @@ export class QuestionnaireInteractionController {
 
   toggleOption(questionIndex: number, label: string): void {
     this.applyMutation({
-      sessionID: this.sessionID,
-      requestID: this.requestID,
+      sessionID: this.questionnaire.sessionID,
+      requestID: this.questionnaire.requestID,
       mutation: {
         type: "toggle_option",
         questionIndex,
@@ -108,8 +94,8 @@ export class QuestionnaireInteractionController {
 
   setCustomAnswer(questionIndex: number, value: string): void {
     this.applyMutation({
-      sessionID: this.sessionID,
-      requestID: this.requestID,
+      sessionID: this.questionnaire.sessionID,
+      requestID: this.questionnaire.requestID,
       mutation: {
         type: "set_custom_answer",
         questionIndex,
@@ -120,8 +106,8 @@ export class QuestionnaireInteractionController {
 
   clearAnswer(questionIndex: number): void {
     this.applyMutation({
-      sessionID: this.sessionID,
-      requestID: this.requestID,
+      sessionID: this.questionnaire.sessionID,
+      requestID: this.questionnaire.requestID,
       mutation: {
         type: "clear_answer",
         questionIndex,
@@ -131,8 +117,8 @@ export class QuestionnaireInteractionController {
 
   submit(): SubmitQuestionnaireResult {
     const result = this.submitQuestionnaire({
-      sessionID: this.sessionID,
-      requestID: this.requestID,
+      sessionID: this.questionnaire.sessionID,
+      requestID: this.questionnaire.requestID,
     });
 
     if (
@@ -155,8 +141,8 @@ export class QuestionnaireInteractionController {
     this.submissionIssues = undefined;
 
     const result = this.cancelQuestionnaire({
-      sessionID: this.sessionID,
-      requestID: this.requestID,
+      sessionID: this.questionnaire.sessionID,
+      requestID: this.questionnaire.requestID,
     });
 
     if (!result.ok) {
@@ -175,7 +161,7 @@ export class QuestionnaireInteractionController {
       throw new Error(result.error.message);
     }
 
-    this.draftAnswers = result.value;
+    this.questionnaire = result.value;
   }
 }
 

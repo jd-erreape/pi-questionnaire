@@ -77,7 +77,7 @@ describe("submitQuestionnaire", () => {
     expect(store.get("session-1")).toBeDefined();
   });
 
-  it("returns the instance and submitted responses when submission succeeds", () => {
+  it("returns the questionnaire and submitted responses when submission succeeds", () => {
     const store = new FakeActiveQuestionnaireStore();
     const questionnaire = createQuestionnaire();
     questionnaire.selectOption(0, "React");
@@ -96,7 +96,7 @@ describe("submitQuestionnaire", () => {
     expect(result).toEqual({
       ok: true,
       value: {
-        instance: {
+        questionnaire: {
           requestID: "req-123",
           sessionID: "session-1",
           title: "Implementation preferences",
@@ -108,6 +108,11 @@ describe("submitQuestionnaire", () => {
               multiSelect: false,
               allowCustom: true,
               required: true,
+            },
+          ],
+          draftAnswers: [
+            {
+              selections: [{ source: "option", value: "React" }],
             },
           ],
         },

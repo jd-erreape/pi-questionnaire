@@ -84,7 +84,7 @@ function applyMutation(
 }
 
 describe("updateQuestionnaireAnswer", () => {
-  it("selects an option for a single-select question and persists it in the store", () => {
+  it("selects an option for a single-select question and returns the updated active questionnaire", () => {
     const store = new FakeActiveQuestionnaireStore();
     store.save(createSingleSelectQuestionnaire());
 
@@ -96,11 +96,25 @@ describe("updateQuestionnaireAnswer", () => {
 
     expect(result).toEqual({
       ok: true,
-      value: [
-        {
-          selections: [{ source: "option", value: "Vue" }],
-        },
-      ],
+      value: {
+        requestID: "req-123",
+        sessionID: "session-1",
+        questions: [
+          {
+            header: "Framework",
+            question: "Which frontend framework should I target?",
+            options: [{ label: "React" }, { label: "Vue" }],
+            multiSelect: false,
+            allowCustom: true,
+            required: true,
+          },
+        ],
+        draftAnswers: [
+          {
+            selections: [{ source: "option", value: "Vue" }],
+          },
+        ],
+      },
     });
     expect(store.get("session-1")?.toAnswerState()).toEqual([
       {
@@ -131,11 +145,29 @@ describe("updateQuestionnaireAnswer", () => {
 
     expect(result).toEqual({
       ok: true,
-      value: [
-        {
-          selections: [{ source: "option", value: "E2E tests" }],
-        },
-      ],
+      value: {
+        requestID: "req-123",
+        sessionID: "session-1",
+        questions: [
+          {
+            header: "Testing",
+            question: "Which testing layers should I include?",
+            options: [
+              { label: "Unit tests" },
+              { label: "Integration tests" },
+              { label: "E2E tests" },
+            ],
+            multiSelect: true,
+            allowCustom: true,
+            required: false,
+          },
+        ],
+        draftAnswers: [
+          {
+            selections: [{ source: "option", value: "E2E tests" }],
+          },
+        ],
+      },
     });
   });
 
@@ -156,14 +188,32 @@ describe("updateQuestionnaireAnswer", () => {
 
     expect(result).toEqual({
       ok: true,
-      value: [
-        {
-          selections: [
-            { source: "option", value: "Unit tests" },
-            { source: "custom", value: "Performance tests" },
-          ],
-        },
-      ],
+      value: {
+        requestID: "req-123",
+        sessionID: "session-1",
+        questions: [
+          {
+            header: "Testing",
+            question: "Which testing layers should I include?",
+            options: [
+              { label: "Unit tests" },
+              { label: "Integration tests" },
+              { label: "E2E tests" },
+            ],
+            multiSelect: true,
+            allowCustom: true,
+            required: false,
+          },
+        ],
+        draftAnswers: [
+          {
+            selections: [
+              { source: "option", value: "Unit tests" },
+              { source: "custom", value: "Performance tests" },
+            ],
+          },
+        ],
+      },
     });
   });
 
@@ -180,7 +230,21 @@ describe("updateQuestionnaireAnswer", () => {
 
     expect(result).toEqual({
       ok: true,
-      value: [{ selections: [] }],
+      value: {
+        requestID: "req-123",
+        sessionID: "session-1",
+        questions: [
+          {
+            header: "Framework",
+            question: "Which frontend framework should I target?",
+            options: [{ label: "React" }, { label: "Vue" }],
+            multiSelect: false,
+            allowCustom: true,
+            required: true,
+          },
+        ],
+        draftAnswers: [{ selections: [] }],
+      },
     });
   });
 });

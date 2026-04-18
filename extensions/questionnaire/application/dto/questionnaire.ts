@@ -1,3 +1,5 @@
+import type { QuestionnaireDraftAnswersDto } from "./questionnaire-draft-answers.js";
+
 export interface QuestionnaireOptionDto {
   label: string;
   description?: string;
@@ -12,8 +14,11 @@ export interface QuestionnaireQuestionDto {
   required: boolean;
 }
 
-export interface QuestionnaireDefinitionDto {
+export interface QuestionnaireDto {
+  requestID: string;
+  sessionID: string;
   title?: string;
   instructions?: string;
   questions: QuestionnaireQuestionDto[];
+  draftAnswers: QuestionnaireDraftAnswersDto;
 }

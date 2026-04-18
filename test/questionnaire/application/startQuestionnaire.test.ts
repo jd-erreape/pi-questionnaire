@@ -163,7 +163,7 @@ describe("startQuestionnaire", () => {
     expect(store.get("session-1")).toEqual(existingQuestionnaire);
   });
 
-  it("creates and stores a normalized questionnaire for a valid interactive request", () => {
+  it("creates and stores a normalized active questionnaire for a valid interactive request", () => {
     const store = new FakeActiveQuestionnaireStore();
     const idGenerator = new FakeIdGenerator("req-123");
 
@@ -195,6 +195,7 @@ describe("startQuestionnaire", () => {
             required: true,
           },
         ],
+        draftAnswers: [{ selections: [] }],
       },
     });
     expect(store.get("session-1")).toEqual(

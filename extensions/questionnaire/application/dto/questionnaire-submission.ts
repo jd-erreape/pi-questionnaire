@@ -1,4 +1,4 @@
-import type { QuestionnaireInstanceDto } from "./questionnaire-instance.js";
+import type { QuestionnaireDto } from "./questionnaire.js";
 
 export interface QuestionnaireSubmittedResponseDto {
   question: string;
@@ -6,6 +6,6 @@ export interface QuestionnaireSubmittedResponseDto {
 }
 
 export interface SubmittedQuestionnaireDto {
-  instance: QuestionnaireInstanceDto;
+  questionnaire: QuestionnaireDto;
   responses: QuestionnaireSubmittedResponseDto[];
 }

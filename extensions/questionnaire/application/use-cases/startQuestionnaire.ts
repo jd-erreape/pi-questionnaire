@@ -2,13 +2,13 @@ import { normalizeQuestionnaireRequest } from "../../domain/policies/normalizeQu
 import { validateQuestionnaireRequest } from "../../domain/policies/validateQuestionnaireRequest.js";
 import { Questionnaire } from "../../domain/questionnaire.js";
 import { Result, type Result as ResultType } from "../../result.js";
-import type { QuestionnaireInstanceDto } from "../dto/questionnaire-instance.js";
+import type { QuestionnaireDto } from "../dto/questionnaire.js";
 import {
   InteractiveUIRequiredError,
   InvalidQuestionnaireRequestError,
   QuestionnaireAlreadyActiveError,
 } from "../errors.js";
-import { toQuestionnaireInstanceDto } from "../mappers/questionnaire-instance.js";
+import { toQuestionnaireDto } from "../mappers/questionnaire.js";
 import type { ActiveQuestionnaireStore, IdGenerator } from "../ports.js";
 
 export interface StartQuestionnaireCommand {
@@ -28,7 +28,7 @@ export type StartQuestionnaireError =
   | QuestionnaireAlreadyActiveError;
 
 export type StartQuestionnaireResult = ResultType<
-  QuestionnaireInstanceDto,
+  QuestionnaireDto,
   StartQuestionnaireError
 >;
 
@@ -66,5 +66,5 @@ export function startQuestionnaire(
 
   dependencies.activeQuestionnaireStore.save(questionnaire);
 
-  return Result.ok(toQuestionnaireInstanceDto(questionnaire));
+  return Result.ok(toQuestionnaireDto(questionnaire));
 }

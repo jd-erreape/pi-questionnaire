@@ -4,7 +4,7 @@ import {
   InvalidQuestionnaireAnswersError,
   QuestionnaireNotActiveError,
 } from "../errors.js";
-import { toQuestionnaireInstanceDto } from "../mappers/questionnaire-instance.js";
+import { toQuestionnaireDto } from "../mappers/questionnaire.js";
 import type { ActiveQuestionnaireStore } from "../ports.js";
 
 export interface SubmitQuestionnaireCommand {
@@ -41,14 +41,14 @@ export function submitQuestionnaire(
     );
   }
 
-  const instance = toQuestionnaireInstanceDto(questionnaire);
+  const questionnaireDto = toQuestionnaireDto(questionnaire);
 
   dependencies.activeQuestionnaireStore.delete(command.sessionID);
 
   return Result.ok({
-    instance,
+    questionnaire: questionnaireDto,
     responses: submissionResult.value.map((answer, index) => ({
-      question: instance.questions[index]?.question ?? "",
+      question: questionnaireDto.questions[index]?.question ?? "",
       selections: [...answer.selections],
     })),
   });

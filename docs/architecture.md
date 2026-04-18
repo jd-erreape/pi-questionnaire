@@ -220,7 +220,7 @@ Examples:
 - `StartQuestionnaireResult`
 - `SubmitQuestionnaireCommand`
 - `SubmitQuestionnaireResult`
-- `QuestionnaireInstanceDto`
+- `QuestionnaireDto`
 
 These are the types that `presentation` and `infrastructure` should use when invoking application behavior.
 

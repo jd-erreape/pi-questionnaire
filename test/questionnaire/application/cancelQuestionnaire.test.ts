@@ -71,7 +71,7 @@ describe("cancelQuestionnaire", () => {
     expect(result.error.message).toBe("Questionnaire is not active.");
   });
 
-  it("removes the active questionnaire and returns its instance data", () => {
+  it("removes the active questionnaire and returns the current questionnaire data", () => {
     const store = new FakeActiveQuestionnaireStore();
     const questionnaire = createQuestionnaire();
     questionnaire.selectOption(0, "React");
@@ -102,6 +102,11 @@ describe("cancelQuestionnaire", () => {
             multiSelect: false,
             allowCustom: true,
             required: true,
+          },
+        ],
+        draftAnswers: [
+          {
+            selections: [{ source: "option", value: "React" }],
           },
         ],
       },
