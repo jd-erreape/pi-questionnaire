@@ -137,13 +137,12 @@ This layer is where the code touches Pi-specific APIs.
 Purpose:
 
 - implement TUI interaction and rendering
-- manage controller/view-model concerns for questionnaire UX
+- manage questionnaire UX state and view-model concerns
 - convert application DTOs and models into user-facing interaction state
 
 Examples:
 
-- questionnaire interaction controller
-- questionnaire view model
+- questionnaire view model / presentation model
 - TUI overlay or custom component
 - keyboard interaction handling
 
@@ -262,7 +261,7 @@ This package should use both object-oriented and functional styles intentionally
 - normalization
 - result mapping
 - stateless boundary transformations
-- view-model derivation
+- view-model derivation where no presentation state is needed
 
 These operations are deterministic and easier to test as pure functions.
 
@@ -271,7 +270,7 @@ These operations are deterministic and easier to test as pure functions.
 - questionnaire instance lifecycle
 - questionnaire aggregate behavior
 - active questionnaire coordination
-- stateful controllers
+- stateful presentation models
 - concrete infrastructure adapters
 
 A class is appropriate when there is meaningful identity, lifecycle, or evolving state.
