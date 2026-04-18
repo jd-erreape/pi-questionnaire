@@ -1,23 +1,23 @@
 import { QuestionnaireError } from "../errors.js";
 
-export interface ValidationIssue {
+export interface ValidationProblem {
   message: string;
   path?: string;
 }
 
 export class QuestionnaireValidationError extends QuestionnaireError {
-  constructor(readonly issues: ValidationIssue[]) {
+  constructor(readonly problems: ValidationProblem[]) {
     super("Invalid questionnaire request.");
   }
 }
 
-export interface QuestionnaireSubmissionIssue {
+export interface QuestionnaireSubmissionProblem {
   message: string;
   questionIndex?: number;
 }
 
 export class QuestionnaireSubmissionError extends QuestionnaireError {
-  constructor(readonly issues: QuestionnaireSubmissionIssue[]) {
+  constructor(readonly problems: QuestionnaireSubmissionProblem[]) {
     super("Invalid questionnaire answers.");
   }
 }

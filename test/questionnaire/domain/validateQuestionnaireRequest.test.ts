@@ -46,7 +46,7 @@ describe("validateQuestionnaireRequest", () => {
   it("rejects a missing questions field", () => {
     const result = validateQuestionnaireRequest({});
 
-    expectInvalidIssues(result, [{ message: "questions is required" }]);
+    expectInvalidProblems(result, [{ message: "questions is required" }]);
   });
 
   it("rejects too many questions", () => {
@@ -85,7 +85,7 @@ describe("validateQuestionnaireRequest", () => {
       ],
     });
 
-    expectInvalidIssues(result, [
+    expectInvalidProblems(result, [
       { message: "questions must contain between 1 and 5 items" },
     ]);
   });
@@ -96,7 +96,7 @@ describe("validateQuestionnaireRequest", () => {
       extra: true,
     });
 
-    expectInvalidIssues(result, [
+    expectInvalidProblems(result, [
       { message: "unknown top-level field: extra" },
     ]);
   });
@@ -113,7 +113,7 @@ describe("validateQuestionnaireRequest", () => {
       ],
     });
 
-    expectInvalidIssues(result, [
+    expectInvalidProblems(result, [
       { message: "question at index 0 has unknown field: extra" },
     ]);
   });
@@ -129,7 +129,7 @@ describe("validateQuestionnaireRequest", () => {
       ],
     });
 
-    expectInvalidIssues(result, [
+    expectInvalidProblems(result, [
       { message: "option at index 0 in question 0 has unknown field: extra" },
     ]);
   });
@@ -146,7 +146,7 @@ describe("validateQuestionnaireRequest", () => {
       ],
     });
 
-    expectInvalidIssues(result, [
+    expectInvalidProblems(result, [
       { message: "question at index 0 field multiSelect must be a boolean" },
     ]);
   });
@@ -162,7 +162,7 @@ describe("validateQuestionnaireRequest", () => {
       ],
     });
 
-    expectInvalidIssues(result, [
+    expectInvalidProblems(result, [
       {
         message:
           'question at index 0 has duplicate option label after trimming and case-folding: "react"',
@@ -181,7 +181,7 @@ describe("validateQuestionnaireRequest", () => {
       ],
     });
 
-    expectInvalidIssues(result, [
+    expectInvalidProblems(result, [
       { message: "question at index 0 field header must not be empty" },
     ]);
   });
@@ -197,7 +197,7 @@ describe("validateQuestionnaireRequest", () => {
       ],
     });
 
-    expectInvalidIssues(result, [
+    expectInvalidProblems(result, [
       {
         message:
           "question at index 0 options must contain between 2 and 5 items",
@@ -206,9 +206,9 @@ describe("validateQuestionnaireRequest", () => {
   });
 });
 
-function expectInvalidIssues(
+function expectInvalidProblems(
   result: ReturnType<typeof validateQuestionnaireRequest>,
-  issues: Array<{ message: string }>,
+  problems: Array<{ message: string }>,
 ): void {
   expect(result.ok).toBe(false);
   if (result.ok) {
@@ -217,5 +217,5 @@ function expectInvalidIssues(
 
   expect(result.error).toBeInstanceOf(QuestionnaireValidationError);
   expect(result.error.message).toBe("Invalid questionnaire request.");
-  expect(result.error.issues).toEqual(issues);
+  expect(result.error.problems).toEqual(problems);
 }

@@ -50,7 +50,7 @@ function createValidInput() {
 }
 
 describe("startQuestionnaire", () => {
-  it("returns invalid_request with issues for invalid input", () => {
+  it("returns invalid_request with problems for invalid input", () => {
     const store = new FakeActiveQuestionnaireStore();
     const idGenerator = new FakeIdGenerator("req-123");
 
@@ -77,7 +77,9 @@ describe("startQuestionnaire", () => {
     }
 
     expect(result.error.message).toBe("Invalid questionnaire request.");
-    expect(result.error.issues).toEqual([{ message: "questions is required" }]);
+    expect(result.error.problems).toEqual([
+      { message: "questions is required" },
+    ]);
     expect(store.get("session-1")).toBeUndefined();
   });
 

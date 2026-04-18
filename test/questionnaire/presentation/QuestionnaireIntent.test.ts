@@ -4,7 +4,7 @@ import type {
   QuestionnaireDraftAnswerMutationDto,
   QuestionnaireDraftAnswersDto,
 } from "../../../extensions/questionnaire/application/dto/questionnaire-draft-answers.js";
-import type { QuestionnaireSubmissionIssueDto } from "../../../extensions/questionnaire/application/dto/questionnaire-issues.js";
+import type { QuestionnaireSubmissionProblemDto } from "../../../extensions/questionnaire/application/dto/questionnaire-problems.js";
 import type { QuestionnaireDto } from "../../../extensions/questionnaire/application/dto/questionnaire.js";
 import { InvalidQuestionnaireAnswersError } from "../../../extensions/questionnaire/application/errors.js";
 import {
@@ -13,6 +13,7 @@ import {
 } from "../../../extensions/questionnaire/presentation/QuestionnaireIntent.js";
 import type {
   CancelQuestionnaireFunction,
+  DisposeQuestionnaireFunction,
   SubmitQuestionnaireFunction,
   UpdateQuestionnaireAnswerFunction,
 } from "../../../extensions/questionnaire/presentation/QuestionnaireViewModel.js";
@@ -106,11 +107,11 @@ function createSubmitSuccess(): SubmitQuestionnaireFunction {
 }
 
 function createSubmitFailure(
-  issues: QuestionnaireSubmissionIssueDto[],
+  problems: QuestionnaireSubmissionProblemDto[],
 ): SubmitQuestionnaireFunction {
   return () => ({
     ok: false,
-    error: new InvalidQuestionnaireAnswersError(issues),
+    error: new InvalidQuestionnaireAnswersError(problems),
   });
 }
 
@@ -121,6 +122,10 @@ function createCancelSuccess(): CancelQuestionnaireFunction {
   });
 }
 
+function createDisposeSuccess(): DisposeQuestionnaireFunction {
+  return () => undefined;
+}
+
 describe("dispatchQuestionnaireIntent", () => {
   it("maps navigation and mutation intents to the view model", () => {
     const viewModel = new QuestionnaireViewModel(
@@ -128,6 +133,7 @@ describe("dispatchQuestionnaireIntent", () => {
       createAnswerUpdateStub(createMultiQuestionQuestionnaire()),
       createSubmitSuccess(),
       createCancelSuccess(),
+      createDisposeSuccess(),
     );
 
     const intents: QuestionnaireIntent[] = [
@@ -167,6 +173,7 @@ describe("dispatchQuestionnaireIntent", () => {
         },
       ]),
       createCancelSuccess(),
+      createDisposeSuccess(),
     );
 
     const submitResult = dispatchQuestionnaireIntent(viewModel, {

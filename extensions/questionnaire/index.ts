@@ -17,6 +17,7 @@ import {
   QuestionnaireAlreadyActiveError,
 } from "./application/errors.js";
 import { cancelQuestionnaire } from "./application/use-cases/cancelQuestionnaire.js";
+import { disposeQuestionnaire } from "./application/use-cases/disposeQuestionnaire.js";
 import { startQuestionnaire } from "./application/use-cases/startQuestionnaire.js";
 import { submitQuestionnaire } from "./application/use-cases/submitQuestionnaire.js";
 import { updateQuestionnaireAnswer } from "./application/use-cases/updateQuestionnaireAnswer.js";
@@ -161,6 +162,7 @@ const QUESTIONNAIRE_TOOL: ToolDefinition<
         updateQuestionnaireAnswer(command, { activeQuestionnaireStore }),
       (command) => submitQuestionnaire(command, { activeQuestionnaireStore }),
       (command) => cancelQuestionnaire(command, { activeQuestionnaireStore }),
+      (command) => disposeQuestionnaire(command, { activeQuestionnaireStore }),
     );
 
     try {
@@ -178,8 +180,7 @@ const QUESTIONNAIRE_TOOL: ToolDefinition<
         ? mapSubmittedOutcome(outcome.result)
         : mapCancelledOutcome(outcome.result);
     } finally {
-      // TODO: This should not be accessing the store directly, we need a use case and the view model to proxy it
-      activeQuestionnaireStore.delete(sessionID);
+      viewModel.dispose();
     }
   },
   renderCall(args, theme) {
@@ -222,8 +223,8 @@ function mapStartFailure(
     const details: QuestionnaireValidationFailureDetailsDto = {
       status: "failed",
       reason: "invalid_request",
-      errors: error.issues.map((issue) =>
-        issue.path ? `${issue.path}: ${issue.message}` : issue.message,
+      errors: error.problems.map((problem) =>
+        problem.path ? `${problem.path}: ${problem.message}` : problem.message,
       ),
     };
 

@@ -44,7 +44,7 @@ function createQuestionnaire(): Questionnaire {
 }
 
 describe("submitQuestionnaire", () => {
-  it("returns invalid_answers with issues when submission fails and keeps the questionnaire active", () => {
+  it("returns invalid_answers with problems when submission fails and keeps the questionnaire active", () => {
     const store = new FakeActiveQuestionnaireStore();
     store.save(createQuestionnaire());
 
@@ -68,7 +68,7 @@ describe("submitQuestionnaire", () => {
       throw new Error("Expected InvalidQuestionnaireAnswersError");
     }
 
-    expect(result.error.issues).toEqual([
+    expect(result.error.problems).toEqual([
       {
         questionIndex: 0,
         message: "question at index 0 requires at least one selection",
@@ -170,7 +170,7 @@ describe("submitQuestionnaire", () => {
       throw new Error("Expected InvalidQuestionnaireAnswersError");
     }
 
-    expect(result.error.issues).toEqual([
+    expect(result.error.problems).toEqual([
       {
         questionIndex: 0,
         message: "question at index 0 does not allow custom selections",

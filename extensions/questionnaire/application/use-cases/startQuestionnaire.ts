@@ -40,7 +40,7 @@ export function startQuestionnaire(
 
   if (!validationResult.ok) {
     return Result.error(
-      new InvalidQuestionnaireRequestError(validationResult.error.issues),
+      new InvalidQuestionnaireRequestError(validationResult.error.problems),
     );
   }
 

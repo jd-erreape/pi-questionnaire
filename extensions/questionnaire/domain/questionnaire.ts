@@ -1,7 +1,7 @@
 import { Result, type Result as ResultType } from "../result.js";
 import {
   QuestionnaireSubmissionError,
-  type QuestionnaireSubmissionIssue,
+  type QuestionnaireSubmissionProblem,
 } from "./errors.js";
 import type { AnswerSlot } from "./answer.js";
 import type { QuestionnaireDefinition } from "./definition.js";
@@ -138,14 +138,14 @@ export class Questionnaire {
   }
 
   submit(): QuestionnaireSubmissionResult {
-    const issues: QuestionnaireSubmissionIssue[] = [];
+    const problems: QuestionnaireSubmissionProblem[] = [];
     const submittedAnswers: AnswerSlot[] = [];
 
     this.definition.questions.forEach((question, questionIndex) => {
       const slot = this.answers[questionIndex];
 
       if (question.required && slot.selections.length === 0) {
-        issues.push({
+        problems.push({
           questionIndex,
           message: `question at index ${questionIndex} requires at least one selection`,
         });
@@ -160,14 +160,14 @@ export class Questionnaire {
           selection.source === "option" &&
           !optionLabels.has(selection.value)
         ) {
-          issues.push({
+          problems.push({
             questionIndex,
             message: `question at index ${questionIndex} has invalid option selection: "${selection.value}"`,
           });
         }
 
         if (selection.source === "custom" && !question.allowCustom) {
-          issues.push({
+          problems.push({
             questionIndex,
             message: `question at index ${questionIndex} does not allow custom selections`,
           });
@@ -179,8 +179,8 @@ export class Questionnaire {
       });
     });
 
-    if (issues.length > 0) {
-      return Result.error(new QuestionnaireSubmissionError(issues));
+    if (problems.length > 0) {
+      return Result.error(new QuestionnaireSubmissionError(problems));
     }
 
     return Result.ok(submittedAnswers);

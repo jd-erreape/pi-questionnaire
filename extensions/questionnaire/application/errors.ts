@@ -1,13 +1,13 @@
 import { QuestionnaireError } from "../errors.js";
 import type {
-  QuestionnaireRequestIssueDto,
-  QuestionnaireSubmissionIssueDto,
-} from "./dto/questionnaire-issues.js";
+  QuestionnaireRequestProblemDto,
+  QuestionnaireSubmissionProblemDto,
+} from "./dto/questionnaire-problems.js";
 
 export class InvalidQuestionnaireRequestError extends QuestionnaireError {
   readonly kind = "invalid_request";
 
-  constructor(readonly issues: QuestionnaireRequestIssueDto[]) {
+  constructor(readonly problems: QuestionnaireRequestProblemDto[]) {
     super("Invalid questionnaire request.");
   }
 }
@@ -39,7 +39,7 @@ export class QuestionnaireNotActiveError extends QuestionnaireError {
 export class InvalidQuestionnaireAnswersError extends QuestionnaireError {
   readonly kind = "invalid_answers";
 
-  constructor(readonly issues: QuestionnaireSubmissionIssueDto[]) {
+  constructor(readonly problems: QuestionnaireSubmissionProblemDto[]) {
     super("Invalid questionnaire answers.");
   }
 }

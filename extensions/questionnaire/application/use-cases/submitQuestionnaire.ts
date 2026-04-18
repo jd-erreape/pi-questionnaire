@@ -37,7 +37,7 @@ export function submitQuestionnaire(
 
   if (!submissionResult.ok) {
     return Result.error(
-      new InvalidQuestionnaireAnswersError(submissionResult.error.issues),
+      new InvalidQuestionnaireAnswersError(submissionResult.error.problems),
     );
   }
 

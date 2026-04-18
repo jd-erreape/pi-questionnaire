@@ -25,8 +25,13 @@ function createContext(options?: {
   hasUI?: boolean;
   sessionFile?: string;
   customResult?: unknown;
+  customError?: Error;
 }) {
-  const custom = vi.fn(() => Promise.resolve(options?.customResult));
+  const custom = vi.fn(() =>
+    options?.customError
+      ? Promise.reject(options.customError)
+      : Promise.resolve(options?.customResult),
+  );
 
   return {
     ctx: {
@@ -221,6 +226,68 @@ describe("questionnaire extension", () => {
             selections: ["React"],
           },
         ],
+      },
+    });
+  });
+
+  it("cleans up the active questionnaire when the UI throws", async () => {
+    const tool = createRegisteredTool();
+    const { ctx: failingCtx } = createContext({
+      sessionFile: "session-a",
+      customError: new Error("UI crashed"),
+    });
+
+    await expect(
+      tool!.execute(
+        "tool-call-1",
+        {
+          title: "Implementation preferences",
+          questions: [
+            {
+              header: "Framework",
+              question: "Which frontend framework should I target?",
+              options: [{ label: "React" }, { label: "Vue" }],
+            },
+          ],
+        },
+        undefined,
+        undefined,
+        failingCtx,
+      ),
+    ).rejects.toThrow("UI crashed");
+
+    const { ctx: retryCtx, custom: retryCustom } = createContext({
+      sessionFile: "session-a",
+      customResult: {
+        kind: "cancelled",
+        result: createQuestionnaireDto(),
+      },
+    });
+
+    const result = await tool!.execute(
+      "tool-call-2",
+      {
+        title: "Implementation preferences",
+        instructions: "Keep answers concise.",
+        questions: [
+          {
+            header: "Framework",
+            question: "Which frontend framework should I target?",
+            options: [{ label: "React" }, { label: "Vue" }],
+          },
+        ],
+      },
+      undefined,
+      undefined,
+      retryCtx,
+    );
+
+    expect(retryCustom).toHaveBeenCalledTimes(1);
+    expect(result).toMatchObject({
+      isError: true,
+      details: {
+        status: "cancelled",
+        reason: "user_cancelled",
       },
     });
   });

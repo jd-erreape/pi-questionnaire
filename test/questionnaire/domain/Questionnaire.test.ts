@@ -248,7 +248,7 @@ describe("Questionnaire", () => {
     }
 
     expect(result.error).toBeInstanceOf(QuestionnaireSubmissionError);
-    expect(result.error.issues).toEqual([
+    expect(result.error.problems).toEqual([
       {
         questionIndex: 0,
         message: "question at index 0 requires at least one selection",
@@ -281,7 +281,7 @@ describe("Questionnaire", () => {
     }
 
     expect(result.error).toBeInstanceOf(QuestionnaireSubmissionError);
-    expect(result.error.issues).toEqual([
+    expect(result.error.problems).toEqual([
       {
         questionIndex: 0,
         message: "question at index 0 does not allow custom selections",
@@ -301,7 +301,7 @@ describe("Questionnaire", () => {
     }
 
     expect(result.error).toBeInstanceOf(QuestionnaireSubmissionError);
-    expect(result.error.issues).toEqual([
+    expect(result.error.problems).toEqual([
       {
         questionIndex: 0,
         message: 'question at index 0 has invalid option selection: "Svelte"',

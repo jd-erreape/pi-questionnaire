@@ -6,7 +6,7 @@ import type {
 import { Result } from "../../result.js";
 import {
   QuestionnaireValidationError,
-  type ValidationIssue,
+  type ValidationProblem,
 } from "../errors.js";
 import type { ValidationResult } from "../validation.js";
 
@@ -32,27 +32,27 @@ export function validateQuestionnaireRequest(
     );
   }
 
-  const issues: ValidationIssue[] = [];
+  const problems: ValidationProblem[] = [];
 
   validateUnknownFields(
     input,
     REQUEST_FIELDS,
     "unknown top-level field",
-    issues,
+    problems,
   );
-  validateOptionalStringField(input.title, "title", issues);
-  validateOptionalStringField(input.instructions, "instructions", issues);
+  validateOptionalStringField(input.title, "title", problems);
+  validateOptionalStringField(input.instructions, "instructions", problems);
 
   if (!("questions" in input)) {
-    issues.push({ message: "questions is required" });
+    problems.push({ message: "questions is required" });
   } else if (!Array.isArray(input.questions)) {
-    issues.push({ message: "questions must be an array" });
+    problems.push({ message: "questions must be an array" });
   } else {
-    validateQuestionArray(input.questions, issues);
+    validateQuestionArray(input.questions, problems);
   }
 
-  if (issues.length > 0) {
-    return Result.error(new QuestionnaireValidationError(issues));
+  if (problems.length > 0) {
+    return Result.error(new QuestionnaireValidationError(problems));
   }
 
   return Result.ok(toQuestionnaireInputDto(input));
@@ -60,25 +60,25 @@ export function validateQuestionnaireRequest(
 
 function validateQuestionArray(
   questions: unknown[],
-  issues: ValidationIssue[],
+  problems: ValidationProblem[],
 ): void {
   if (questions.length < 1 || questions.length > 5) {
-    issues.push({ message: "questions must contain between 1 and 5 items" });
+    problems.push({ message: "questions must contain between 1 and 5 items" });
     return;
   }
 
   questions.forEach((question, questionIndex) => {
-    validateQuestion(question, questionIndex, issues);
+    validateQuestion(question, questionIndex, problems);
   });
 }
 
 function validateQuestion(
   question: unknown,
   questionIndex: number,
-  issues: ValidationIssue[],
+  problems: ValidationProblem[],
 ): void {
   if (!isRecord(question)) {
-    issues.push({
+    problems.push({
       message: `question at index ${questionIndex} must be an object`,
     });
     return;
@@ -88,50 +88,50 @@ function validateQuestion(
     question,
     QUESTION_FIELDS,
     `question at index ${questionIndex} has unknown field`,
-    issues,
+    problems,
   );
 
   validateRequiredStringField(
     question.header,
     `question at index ${questionIndex} field header`,
-    issues,
+    problems,
   );
   validateRequiredStringField(
     question.question,
     `question at index ${questionIndex} field question`,
-    issues,
+    problems,
   );
 
   validateOptionalBooleanField(
     question.multiSelect,
     `question at index ${questionIndex} field multiSelect`,
-    issues,
+    problems,
   );
   validateOptionalBooleanField(
     question.allowCustom,
     `question at index ${questionIndex} field allowCustom`,
-    issues,
+    problems,
   );
   validateOptionalBooleanField(
     question.required,
     `question at index ${questionIndex} field required`,
-    issues,
+    problems,
   );
 
   if (!("options" in question)) {
-    issues.push({
+    problems.push({
       message: `question at index ${questionIndex} field options is required`,
     });
     return;
   }
   if (!Array.isArray(question.options)) {
-    issues.push({
+    problems.push({
       message: `question at index ${questionIndex} field options must be an array`,
     });
     return;
   }
   if (question.options.length < 2 || question.options.length > 5) {
-    issues.push({
+    problems.push({
       message: `question at index ${questionIndex} options must contain between 2 and 5 items`,
     });
     return;
@@ -144,7 +144,7 @@ function validateQuestion(
       option,
       questionIndex,
       optionIndex,
-      issues,
+      problems,
     );
 
     if (!normalizedLabel) {
@@ -152,7 +152,7 @@ function validateQuestion(
     }
 
     if (normalizedLabels.has(normalizedLabel)) {
-      issues.push({
+      problems.push({
         message: `question at index ${questionIndex} has duplicate option label after trimming and case-folding: "${normalizedLabel}"`,
       });
       return;
@@ -166,10 +166,10 @@ function validateOption(
   option: unknown,
   questionIndex: number,
   optionIndex: number,
-  issues: ValidationIssue[],
+  problems: ValidationProblem[],
 ): string | undefined {
   if (!isRecord(option)) {
-    issues.push({
+    problems.push({
       message: `option at index ${optionIndex} in question ${questionIndex} must be an object`,
     });
     return undefined;
@@ -179,24 +179,24 @@ function validateOption(
     option,
     OPTION_FIELDS,
     `option at index ${optionIndex} in question ${questionIndex} has unknown field`,
-    issues,
+    problems,
   );
 
   validateOptionalStringField(
     option.description,
     `option at index ${optionIndex} in question ${questionIndex} field description`,
-    issues,
+    problems,
   );
 
   if (!("label" in option)) {
-    issues.push({
+    problems.push({
       message: `option at index ${optionIndex} in question ${questionIndex} field label is required`,
     });
     return undefined;
   }
 
   if (typeof option.label !== "string") {
-    issues.push({
+    problems.push({
       message: `option at index ${optionIndex} in question ${questionIndex} field label must be a string`,
     });
     return undefined;
@@ -204,7 +204,7 @@ function validateOption(
 
   const trimmedLabel = option.label.trim();
   if (trimmedLabel.length === 0) {
-    issues.push({
+    problems.push({
       message: `option at index ${optionIndex} in question ${questionIndex} field label must not be empty`,
     });
     return undefined;
@@ -217,11 +217,11 @@ function validateUnknownFields(
   value: Record<string, unknown>,
   allowedFields: Set<string>,
   prefix: string,
-  issues: ValidationIssue[],
+  problems: ValidationProblem[],
 ): void {
   Object.keys(value).forEach((key) => {
     if (!allowedFields.has(key)) {
-      issues.push({ message: `${prefix}: ${key}` });
+      problems.push({ message: `${prefix}: ${key}` });
     }
   });
 }
@@ -229,43 +229,43 @@ function validateUnknownFields(
 function validateRequiredStringField(
   value: unknown,
   fieldLabel: string,
-  issues: ValidationIssue[],
+  problems: ValidationProblem[],
 ): void {
   if (typeof value !== "string") {
-    issues.push({ message: `${fieldLabel} must be a string` });
+    problems.push({ message: `${fieldLabel} must be a string` });
     return;
   }
 
   if (value.trim().length === 0) {
-    issues.push({ message: `${fieldLabel} must not be empty` });
+    problems.push({ message: `${fieldLabel} must not be empty` });
   }
 }
 
 function validateOptionalStringField(
   value: unknown,
   fieldLabel: string,
-  issues: ValidationIssue[],
+  problems: ValidationProblem[],
 ): void {
   if (value === undefined) {
     return;
   }
 
   if (typeof value !== "string") {
-    issues.push({ message: `${fieldLabel} must be a string` });
+    problems.push({ message: `${fieldLabel} must be a string` });
   }
 }
 
 function validateOptionalBooleanField(
   value: unknown,
   fieldLabel: string,
-  issues: ValidationIssue[],
+  problems: ValidationProblem[],
 ): void {
   if (value === undefined) {
     return;
   }
 
   if (typeof value !== "boolean") {
-    issues.push({ message: `${fieldLabel} must be a boolean` });
+    problems.push({ message: `${fieldLabel} must be a boolean` });
   }
 }
 

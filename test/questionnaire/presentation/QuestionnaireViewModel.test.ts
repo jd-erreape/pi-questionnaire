@@ -4,7 +4,7 @@ import type {
   QuestionnaireDraftAnswerMutationDto,
   QuestionnaireDraftAnswersDto,
 } from "../../../extensions/questionnaire/application/dto/questionnaire-draft-answers.js";
-import type { QuestionnaireSubmissionIssueDto } from "../../../extensions/questionnaire/application/dto/questionnaire-issues.js";
+import type { QuestionnaireSubmissionProblemDto } from "../../../extensions/questionnaire/application/dto/questionnaire-problems.js";
 import type { QuestionnaireDto } from "../../../extensions/questionnaire/application/dto/questionnaire.js";
 import {
   InvalidQuestionnaireAnswersError,
@@ -12,6 +12,7 @@ import {
 } from "../../../extensions/questionnaire/application/errors.js";
 import type {
   CancelQuestionnaireFunction,
+  DisposeQuestionnaireFunction,
   SubmitQuestionnaireFunction,
   UpdateQuestionnaireAnswerFunction,
 } from "../../../extensions/questionnaire/presentation/QuestionnaireViewModel.js";
@@ -117,11 +118,11 @@ function createSubmitSuccess(): SubmitQuestionnaireFunction {
 }
 
 function createSubmitFailure(
-  issues: QuestionnaireSubmissionIssueDto[],
+  problems: QuestionnaireSubmissionProblemDto[],
 ): SubmitQuestionnaireFunction {
   return () => ({
     ok: false,
-    error: new InvalidQuestionnaireAnswersError(issues),
+    error: new InvalidQuestionnaireAnswersError(problems),
   });
 }
 
@@ -132,6 +133,10 @@ function createCancelSuccess(): CancelQuestionnaireFunction {
   });
 }
 
+function createDisposeSuccess(): DisposeQuestionnaireFunction {
+  return () => undefined;
+}
+
 describe("QuestionnaireViewModel", () => {
   it("initializes from questionnaire data and starts at question index 0", () => {
     const viewModel = new QuestionnaireViewModel(
@@ -139,6 +144,7 @@ describe("QuestionnaireViewModel", () => {
       createAnswerUpdateStub(createMultiQuestionQuestionnaire()),
       createSubmitSuccess(),
       createCancelSuccess(),
+      createDisposeSuccess(),
     );
 
     expect(viewModel.currentQuestionIndex()).toBe(0);
@@ -158,6 +164,7 @@ describe("QuestionnaireViewModel", () => {
       createAnswerUpdateStub(createMultiQuestionQuestionnaire()),
       createSubmitSuccess(),
       createCancelSuccess(),
+      createDisposeSuccess(),
     );
 
     viewModel.nextQuestion();
@@ -190,6 +197,7 @@ describe("QuestionnaireViewModel", () => {
       createAnswerUpdateStub(createMultiQuestionQuestionnaire()),
       createSubmitSuccess(),
       createCancelSuccess(),
+      createDisposeSuccess(),
     );
 
     viewModel.nextQuestion();
@@ -228,6 +236,7 @@ describe("QuestionnaireViewModel", () => {
       createAnswerUpdateStub(createMultiQuestionQuestionnaire()),
       createSubmitSuccess(),
       createCancelSuccess(),
+      createDisposeSuccess(),
     );
 
     viewModel.previousQuestion();
@@ -248,6 +257,7 @@ describe("QuestionnaireViewModel", () => {
       createAnswerUpdateStub(createSingleSelectQuestionnaire()),
       createSubmitSuccess(),
       createCancelSuccess(),
+      createDisposeSuccess(),
     );
 
     viewModel.selectOption("Vue");
@@ -277,6 +287,7 @@ describe("QuestionnaireViewModel", () => {
       createAnswerUpdateStub(createMultiQuestionQuestionnaire()),
       createSubmitSuccess(),
       createCancelSuccess(),
+      createDisposeSuccess(),
     );
 
     viewModel.nextQuestion();
@@ -304,6 +315,7 @@ describe("QuestionnaireViewModel", () => {
       }),
       createSubmitSuccess(),
       createCancelSuccess(),
+      createDisposeSuccess(),
     );
 
     viewModel.clearAnswer();
@@ -311,7 +323,7 @@ describe("QuestionnaireViewModel", () => {
     expect(viewModel.draftAnswers()).toEqual([{ selections: [] }]);
   });
 
-  it("maps submission issues to the matching question after failed submit", () => {
+  it("maps submission problems to the matching question after failed submit", () => {
     const viewModel = new QuestionnaireViewModel(
       createSingleSelectQuestionnaire(),
       createAnswerUpdateStub(createSingleSelectQuestionnaire()),
@@ -322,20 +334,21 @@ describe("QuestionnaireViewModel", () => {
         },
       ]),
       createCancelSuccess(),
+      createDisposeSuccess(),
     );
 
     const result = viewModel.submit();
 
     expect(result.ok).toBe(false);
-    expect(viewModel.currentQuestion().issue()).toBe(
+    expect(viewModel.currentQuestion().problem()).toBe(
       "question at index 0 requires at least one selection",
     );
-    expect(viewModel.questions()[0]?.issue()).toBe(
+    expect(viewModel.questions()[0]?.problem()).toBe(
       "question at index 0 requires at least one selection",
     );
   });
 
-  it("clears submission issues after any subsequent mutation", () => {
+  it("clears submission problems after any subsequent mutation", () => {
     const viewModel = new QuestionnaireViewModel(
       createSingleSelectQuestionnaire(),
       createAnswerUpdateStub(createSingleSelectQuestionnaire()),
@@ -346,16 +359,17 @@ describe("QuestionnaireViewModel", () => {
         },
       ]),
       createCancelSuccess(),
+      createDisposeSuccess(),
     );
 
     viewModel.submit();
     viewModel.selectOption("React");
 
-    expect(viewModel.currentQuestion().issue()).toBeUndefined();
-    expect(viewModel.questions()[0]?.issue()).toBeUndefined();
+    expect(viewModel.currentQuestion().problem()).toBeUndefined();
+    expect(viewModel.questions()[0]?.problem()).toBeUndefined();
   });
 
-  it("successful submit returns finalized responses and clears previous issues", () => {
+  it("successful submit returns finalized responses and clears previous problems", () => {
     const questionnaire: QuestionnaireDto = {
       ...createSingleSelectQuestionnaire(),
       draftAnswers: [
@@ -400,6 +414,7 @@ describe("QuestionnaireViewModel", () => {
       createAnswerUpdateStub(createSingleSelectQuestionnaire()),
       submitQuestionnaire,
       createCancelSuccess(),
+      createDisposeSuccess(),
     );
 
     viewModel.submit();
@@ -423,7 +438,7 @@ describe("QuestionnaireViewModel", () => {
       { sessionID: "session-1", requestID: "req-123" },
       { sessionID: "session-1", requestID: "req-123" },
     ]);
-    expect(viewModel.currentQuestion().issue()).toBeUndefined();
+    expect(viewModel.currentQuestion().problem()).toBeUndefined();
   });
 
   it("cancels the active questionnaire and returns its questionnaire data", () => {
@@ -441,12 +456,30 @@ describe("QuestionnaireViewModel", () => {
       createAnswerUpdateStub(createSingleSelectQuestionnaire()),
       createSubmitSuccess(),
       cancelQuestionnaire,
+      createDisposeSuccess(),
     );
 
     expect(viewModel.cancel()).toEqual({
       ok: true,
       value: questionnaire,
     });
+  });
+
+  it("disposes the active questionnaire through the application boundary", () => {
+    const calls: Array<{ sessionID: string; requestID: string }> = [];
+    const viewModel = new QuestionnaireViewModel(
+      createSingleSelectQuestionnaire(),
+      createAnswerUpdateStub(createSingleSelectQuestionnaire()),
+      createSubmitSuccess(),
+      createCancelSuccess(),
+      (command) => {
+        calls.push(command);
+      },
+    );
+
+    viewModel.dispose();
+
+    expect(calls).toEqual([{ sessionID: "session-1", requestID: "req-123" }]);
   });
 
   it("throws when cancel reports no active questionnaire", () => {
@@ -458,6 +491,7 @@ describe("QuestionnaireViewModel", () => {
         ok: false,
         error: new QuestionnaireNotActiveError(),
       }),
+      createDisposeSuccess(),
     );
 
     expect(() => viewModel.cancel()).toThrowError(
@@ -474,6 +508,7 @@ describe("QuestionnaireViewModel", () => {
       }),
       createSubmitSuccess(),
       createCancelSuccess(),
+      createDisposeSuccess(),
     );
 
     expect(() => viewModel.selectOption("React")).toThrowError(
@@ -494,6 +529,7 @@ describe("QuestionnaireViewModel", () => {
           createAnswerUpdateStub(createSingleSelectQuestionnaire()),
           createSubmitSuccess(),
           createCancelSuccess(),
+          createDisposeSuccess(),
         ),
     ).toThrowError("QuestionnaireDto must contain at least one question.");
   });

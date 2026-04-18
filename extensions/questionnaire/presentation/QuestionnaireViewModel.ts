@@ -2,7 +2,7 @@ import type {
   QuestionnaireDraftAnswersDto,
   QuestionnaireDraftSelectionDto,
 } from "../application/dto/questionnaire-draft-answers.js";
-import type { QuestionnaireSubmissionIssueDto } from "../application/dto/questionnaire-issues.js";
+import type { QuestionnaireSubmissionProblemDto } from "../application/dto/questionnaire-problems.js";
 import type {
   QuestionnaireOptionDto,
   QuestionnaireQuestionDto,
@@ -16,6 +16,7 @@ import type {
   CancelQuestionnaireCommand,
   CancelQuestionnaireResult,
 } from "../application/use-cases/cancelQuestionnaire.js";
+import type { DisposeQuestionnaireCommand } from "../application/use-cases/disposeQuestionnaire.js";
 import type {
   SubmitQuestionnaireCommand,
   SubmitQuestionnaireResult,
@@ -37,17 +38,24 @@ export type CancelQuestionnaireFunction = (
   command: CancelQuestionnaireCommand,
 ) => CancelQuestionnaireResult;
 
+export type DisposeQuestionnaireFunction = (
+  command: DisposeQuestionnaireCommand,
+) => void;
+
 export type { SubmitQuestionnaireResult, CancelQuestionnaireResult };
 
 export class QuestionnaireViewModel {
   private currentQuestionIndexValue = 0;
-  private submissionIssuesValue: QuestionnaireSubmissionIssueDto[] | undefined;
+  private submissionProblemsValue:
+    | QuestionnaireSubmissionProblemDto[]
+    | undefined;
 
   constructor(
     private questionnaire: QuestionnaireDto,
     private readonly updateQuestionnaireAnswer: UpdateQuestionnaireAnswerFunction,
     private readonly submitQuestionnaire: SubmitQuestionnaireFunction,
     private readonly cancelQuestionnaire: CancelQuestionnaireFunction,
+    private readonly disposeQuestionnaire: DisposeQuestionnaireFunction,
   ) {
     if (this.questionnaire.questions.length === 0) {
       throw new Error("QuestionnaireDto must contain at least one question.");
@@ -89,12 +97,12 @@ export class QuestionnaireViewModel {
       this.questionnaire.questions[this.currentQuestionIndexValue],
       this.questionnaire.draftAnswers[this.currentQuestionIndexValue]
         ?.selections ?? [],
-      this.issueByQuestionIndex().get(this.currentQuestionIndexValue),
+      this.problemByQuestionIndex().get(this.currentQuestionIndexValue),
     );
   }
 
   questions(): QuestionnaireQuestionSummaryViewModel[] {
-    const issueByQuestionIndex = this.issueByQuestionIndex();
+    const problemByQuestionIndex = this.problemByQuestionIndex();
 
     return this.questionnaire.questions.map(
       (question, index) =>
@@ -102,7 +110,7 @@ export class QuestionnaireViewModel {
           index,
           question.question,
           (this.questionnaire.draftAnswers[index]?.selections.length ?? 0) > 0,
-          issueByQuestionIndex.get(index),
+          problemByQuestionIndex.get(index),
         ),
     );
   }
@@ -170,7 +178,7 @@ export class QuestionnaireViewModel {
       !result.ok &&
       result.error instanceof InvalidQuestionnaireAnswersError
     ) {
-      this.submissionIssuesValue = result.error.issues;
+      this.submissionProblemsValue = result.error.problems;
       return result;
     }
 
@@ -178,12 +186,12 @@ export class QuestionnaireViewModel {
       throw new Error(result.error.message);
     }
 
-    this.submissionIssuesValue = undefined;
+    this.submissionProblemsValue = undefined;
     return result;
   }
 
   cancel(): CancelQuestionnaireResult {
-    this.submissionIssuesValue = undefined;
+    this.submissionProblemsValue = undefined;
 
     const result = this.cancelQuestionnaire({
       sessionID: this.questionnaire.sessionID,
@@ -197,16 +205,24 @@ export class QuestionnaireViewModel {
     return result;
   }
 
-  private issueByQuestionIndex(): Map<number, string> {
-    const issueByQuestionIndex = new Map<number, string>();
+  dispose(): void {
+    this.submissionProblemsValue = undefined;
+    this.disposeQuestionnaire({
+      sessionID: this.questionnaire.sessionID,
+      requestID: this.questionnaire.requestID,
+    });
+  }
 
-    this.submissionIssuesValue?.forEach((issue) => {
-      if (issue.questionIndex !== undefined) {
-        issueByQuestionIndex.set(issue.questionIndex, issue.message);
+  private problemByQuestionIndex(): Map<number, string> {
+    const problemByQuestionIndex = new Map<number, string>();
+
+    this.submissionProblemsValue?.forEach((problem) => {
+      if (problem.questionIndex !== undefined) {
+        problemByQuestionIndex.set(problem.questionIndex, problem.message);
       }
     });
 
-    return issueByQuestionIndex;
+    return problemByQuestionIndex;
   }
 
   private applyFocusedMutation(
@@ -263,7 +279,7 @@ export class QuestionnaireViewModel {
   }
 
   private applyMutation(command: UpdateQuestionnaireAnswerCommand): void {
-    this.submissionIssuesValue = undefined;
+    this.submissionProblemsValue = undefined;
 
     const result = this.updateQuestionnaireAnswer(command);
 
@@ -305,7 +321,7 @@ class QuestionnaireCurrentQuestionViewModel {
     private readonly questionIndex: number,
     private readonly questionData: QuestionnaireQuestionDto,
     private readonly selections: QuestionnaireDraftSelectionDto[],
-    private readonly issueMessage: string | undefined,
+    private readonly problemMessage: string | undefined,
   ) {
     this.optionViewModels = this.questionData.options.map(
       (option) =>
@@ -352,8 +368,8 @@ class QuestionnaireCurrentQuestionViewModel {
       ?.value;
   }
 
-  issue(): string | undefined {
-    return this.issueMessage;
+  problem(): string | undefined {
+    return this.problemMessage;
   }
 }
 
@@ -381,7 +397,7 @@ class QuestionnaireQuestionSummaryViewModel {
     private readonly questionIndex: number,
     private readonly questionText: string,
     private readonly answered: boolean,
-    private readonly issueMessage: string | undefined,
+    private readonly problemMessage: string | undefined,
   ) {}
 
   index(): number {
@@ -396,8 +412,8 @@ class QuestionnaireQuestionSummaryViewModel {
     return this.answered;
   }
 
-  issue(): string | undefined {
-    return this.issueMessage;
+  problem(): string | undefined {
+    return this.problemMessage;
   }
 }
 

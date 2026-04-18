@@ -5,7 +5,7 @@ import type {
   QuestionnaireDraftAnswerMutationDto,
   QuestionnaireDraftAnswersDto,
 } from "../../../extensions/questionnaire/application/dto/questionnaire-draft-answers.js";
-import type { QuestionnaireSubmissionIssueDto } from "../../../extensions/questionnaire/application/dto/questionnaire-issues.js";
+import type { QuestionnaireSubmissionProblemDto } from "../../../extensions/questionnaire/application/dto/questionnaire-problems.js";
 import type { QuestionnaireDto } from "../../../extensions/questionnaire/application/dto/questionnaire.js";
 import { InvalidQuestionnaireAnswersError } from "../../../extensions/questionnaire/application/errors.js";
 import {
@@ -14,6 +14,7 @@ import {
 } from "../../../extensions/questionnaire/presentation/QuestionnaireComponent.js";
 import type {
   CancelQuestionnaireFunction,
+  DisposeQuestionnaireFunction,
   SubmitQuestionnaireFunction,
   UpdateQuestionnaireAnswerFunction,
 } from "../../../extensions/questionnaire/presentation/QuestionnaireViewModel.js";
@@ -105,11 +106,11 @@ function createSubmitSuccess(): SubmitQuestionnaireFunction {
 }
 
 function createSubmitFailure(
-  issues: QuestionnaireSubmissionIssueDto[],
+  problems: QuestionnaireSubmissionProblemDto[],
 ): SubmitQuestionnaireFunction {
   return () => ({
     ok: false,
-    error: new InvalidQuestionnaireAnswersError(issues),
+    error: new InvalidQuestionnaireAnswersError(problems),
   });
 }
 
@@ -120,6 +121,10 @@ function createCancelSuccess(
     ok: true,
     value: questionnaire,
   });
+}
+
+function createDisposeSuccess(): DisposeQuestionnaireFunction {
+  return () => undefined;
 }
 
 function createViewModel(options?: {
@@ -134,6 +139,7 @@ function createViewModel(options?: {
     createAnswerUpdateStub(questionnaire),
     options?.submit ?? createSubmitSuccess(),
     createCancelSuccess(questionnaire),
+    createDisposeSuccess(),
   );
 }
 
@@ -167,7 +173,7 @@ describe("QuestionnaireComponent", () => {
     expect(lines).toContain("Submit");
   });
 
-  it("keeps the UI open and shows submission issues when submit is invalid", () => {
+  it("keeps the UI open and shows submission problems when submit is invalid", () => {
     const viewModel = createViewModel({
       submit: createSubmitFailure([
         {
@@ -267,6 +273,7 @@ describe("QuestionnaireComponent", () => {
       createAnswerUpdateStub(questionnaire),
       createSubmitSuccess(),
       createCancelSuccess(questionnaire),
+      createDisposeSuccess(),
     );
     const { component, done } = createComponent(viewModel);
 

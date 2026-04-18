@@ -139,9 +139,9 @@ export class QuestionnaireComponent implements Component {
       add(theme.fg("dim", " Enter save • Backspace delete • Esc cancel"));
     }
 
-    if (currentQuestion.issue()) {
+    if (currentQuestion.problem()) {
       add("");
-      add(theme.fg("warning", ` Issue: ${currentQuestion.issue()}`));
+      add(theme.fg("warning", ` Problem: ${currentQuestion.problem()}`));
     }
 
     add("");
@@ -348,8 +348,8 @@ export class QuestionnaireComponent implements Component {
         question.index() === this.options.viewModel.currentQuestionIndex();
       const prefix = selected ? "▸" : " ";
       const answered = question.isAnswered() ? "✓" : "·";
-      const issue = question.issue() ? "!" : "";
-      return `${prefix}Q${question.index() + 1}${answered}${issue}`;
+      const problem = question.problem() ? "!" : "";
+      return `${prefix}Q${question.index() + 1}${answered}${problem}`;
     });
 
     return truncateToWidth(
