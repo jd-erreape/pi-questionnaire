@@ -144,6 +144,8 @@ describe("QuestionnaireViewModel", () => {
     expect(viewModel.currentQuestionIndex()).toBe(0);
     expect(viewModel.progress().currentQuestionNumber()).toBe(1);
     expect(viewModel.progress().isFirstQuestion()).toBe(true);
+    expect(viewModel.canGoPrevious()).toBe(false);
+    expect(viewModel.canGoNext()).toBe(true);
     expect(viewModel.currentQuestion().index()).toBe(0);
     expect(viewModel.currentQuestion().question()).toBe(
       "Which frontend framework should I target?",
@@ -166,6 +168,8 @@ describe("QuestionnaireViewModel", () => {
     expect(viewModel.progress().totalQuestions()).toBe(2);
     expect(viewModel.progress().isFirstQuestion()).toBe(false);
     expect(viewModel.progress().isLastQuestion()).toBe(true);
+    expect(viewModel.canGoPrevious()).toBe(true);
+    expect(viewModel.canGoNext()).toBe(false);
 
     const currentQuestion = viewModel.currentQuestion();
 
@@ -218,7 +222,7 @@ describe("QuestionnaireViewModel", () => {
     ]);
   });
 
-  it("keeps navigation bounded to the questionnaire range", () => {
+  it("keeps navigation bounded to the questionnaire range and supports goToQuestion", () => {
     const viewModel = new QuestionnaireViewModel(
       createMultiQuestionQuestionnaire(),
       createAnswerUpdateStub(createMultiQuestionQuestionnaire()),
@@ -229,13 +233,16 @@ describe("QuestionnaireViewModel", () => {
     viewModel.previousQuestion();
     expect(viewModel.currentQuestionIndex()).toBe(0);
 
-    viewModel.nextQuestion();
-    viewModel.nextQuestion();
+    viewModel.goToQuestion(99);
     expect(viewModel.currentQuestionIndex()).toBe(1);
     expect(viewModel.progress().isLastQuestion()).toBe(true);
+
+    viewModel.goToQuestion(-5);
+    expect(viewModel.currentQuestionIndex()).toBe(0);
+    expect(viewModel.progress().isFirstQuestion()).toBe(true);
   });
 
-  it("selecting an option updates the questionnaire data it projects", () => {
+  it("selecting an option uses the currently focused question", () => {
     const viewModel = new QuestionnaireViewModel(
       createSingleSelectQuestionnaire(),
       createAnswerUpdateStub(createSingleSelectQuestionnaire()),
@@ -243,7 +250,7 @@ describe("QuestionnaireViewModel", () => {
       createCancelSuccess(),
     );
 
-    viewModel.selectOption(0, "Vue");
+    viewModel.selectOption("Vue");
 
     expect(viewModel.draftAnswers()).toEqual([
       {
@@ -264,7 +271,7 @@ describe("QuestionnaireViewModel", () => {
     ]);
   });
 
-  it("toggles options and custom answers through application updates", () => {
+  it("toggles options and custom answers on the focused question", () => {
     const viewModel = new QuestionnaireViewModel(
       createMultiQuestionQuestionnaire(),
       createAnswerUpdateStub(createMultiQuestionQuestionnaire()),
@@ -273,10 +280,10 @@ describe("QuestionnaireViewModel", () => {
     );
 
     viewModel.nextQuestion();
-    viewModel.toggleOption(1, "Unit tests");
-    viewModel.toggleOption(1, "E2E tests");
-    viewModel.toggleOption(1, "Unit tests");
-    viewModel.setCustomAnswer(1, "Load tests");
+    viewModel.toggleOption("Unit tests");
+    viewModel.toggleOption("E2E tests");
+    viewModel.toggleOption("Unit tests");
+    viewModel.setCustomAnswer("Load tests");
 
     expect(viewModel.draftAnswers()[1]).toEqual({
       selections: [{ source: "custom", value: "Load tests" }],
@@ -284,7 +291,7 @@ describe("QuestionnaireViewModel", () => {
     expect(viewModel.currentQuestion().customAnswer()).toBe("Load tests");
   });
 
-  it("clearing an answer empties the projected draft slot", () => {
+  it("clearing an answer empties the focused draft slot", () => {
     const viewModel = new QuestionnaireViewModel(
       createSingleSelectQuestionnaire(),
       createAnswerUpdateStub({
@@ -299,7 +306,7 @@ describe("QuestionnaireViewModel", () => {
       createCancelSuccess(),
     );
 
-    viewModel.clearAnswer(0);
+    viewModel.clearAnswer();
 
     expect(viewModel.draftAnswers()).toEqual([{ selections: [] }]);
   });
@@ -342,7 +349,7 @@ describe("QuestionnaireViewModel", () => {
     );
 
     viewModel.submit();
-    viewModel.selectOption(0, "React");
+    viewModel.selectOption("React");
 
     expect(viewModel.currentQuestion().issue()).toBeUndefined();
     expect(viewModel.questions()[0]?.issue()).toBeUndefined();
@@ -396,7 +403,7 @@ describe("QuestionnaireViewModel", () => {
     );
 
     viewModel.submit();
-    viewModel.selectOption(0, "React");
+    viewModel.selectOption("React");
 
     const result = viewModel.submit();
 
@@ -469,7 +476,7 @@ describe("QuestionnaireViewModel", () => {
       createCancelSuccess(),
     );
 
-    expect(() => viewModel.selectOption(0, "React")).toThrowError(
+    expect(() => viewModel.selectOption("React")).toThrowError(
       "Questionnaire is not active.",
     );
   });

@@ -66,6 +66,16 @@ export class QuestionnaireViewModel {
     return this.currentQuestionIndexValue;
   }
 
+  canGoNext(): boolean {
+    return (
+      this.currentQuestionIndexValue < this.questionnaire.questions.length - 1
+    );
+  }
+
+  canGoPrevious(): boolean {
+    return this.currentQuestionIndexValue > 0;
+  }
+
   progress(): QuestionnaireProgressViewModel {
     return new QuestionnaireProgressViewModel(
       this.currentQuestionIndexValue,
@@ -115,50 +125,38 @@ export class QuestionnaireViewModel {
     );
   }
 
-  selectOption(questionIndex: number, label: string): void {
-    this.applyMutation({
-      sessionID: this.questionnaire.sessionID,
-      requestID: this.questionnaire.requestID,
-      mutation: {
-        type: "select_option",
-        questionIndex,
-        label,
-      },
+  goToQuestion(questionIndex: number): void {
+    this.currentQuestionIndexValue = clamp(
+      questionIndex,
+      0,
+      this.questionnaire.questions.length - 1,
+    );
+  }
+
+  selectOption(label: string): void {
+    this.applyCurrentQuestionMutation({
+      type: "select_option",
+      label,
     });
   }
 
-  toggleOption(questionIndex: number, label: string): void {
-    this.applyMutation({
-      sessionID: this.questionnaire.sessionID,
-      requestID: this.questionnaire.requestID,
-      mutation: {
-        type: "toggle_option",
-        questionIndex,
-        label,
-      },
+  toggleOption(label: string): void {
+    this.applyCurrentQuestionMutation({
+      type: "toggle_option",
+      label,
     });
   }
 
-  setCustomAnswer(questionIndex: number, value: string): void {
-    this.applyMutation({
-      sessionID: this.questionnaire.sessionID,
-      requestID: this.questionnaire.requestID,
-      mutation: {
-        type: "set_custom_answer",
-        questionIndex,
-        value,
-      },
+  setCustomAnswer(value: string): void {
+    this.applyCurrentQuestionMutation({
+      type: "set_custom_answer",
+      value,
     });
   }
 
-  clearAnswer(questionIndex: number): void {
-    this.applyMutation({
-      sessionID: this.questionnaire.sessionID,
-      requestID: this.questionnaire.requestID,
-      mutation: {
-        type: "clear_answer",
-        questionIndex,
-      },
+  clearAnswer(): void {
+    this.applyCurrentQuestionMutation({
+      type: "clear_answer",
     });
   }
 
@@ -209,6 +207,59 @@ export class QuestionnaireViewModel {
     });
 
     return issueByQuestionIndex;
+  }
+
+  private applyCurrentQuestionMutation(
+    mutation:
+      | { type: "select_option"; label: string }
+      | { type: "toggle_option"; label: string }
+      | { type: "set_custom_answer"; value: string }
+      | { type: "clear_answer" },
+  ): void {
+    switch (mutation.type) {
+      case "select_option":
+        this.applyMutation({
+          sessionID: this.questionnaire.sessionID,
+          requestID: this.questionnaire.requestID,
+          mutation: {
+            type: "select_option",
+            questionIndex: this.currentQuestionIndexValue,
+            label: mutation.label,
+          },
+        });
+        return;
+      case "toggle_option":
+        this.applyMutation({
+          sessionID: this.questionnaire.sessionID,
+          requestID: this.questionnaire.requestID,
+          mutation: {
+            type: "toggle_option",
+            questionIndex: this.currentQuestionIndexValue,
+            label: mutation.label,
+          },
+        });
+        return;
+      case "set_custom_answer":
+        this.applyMutation({
+          sessionID: this.questionnaire.sessionID,
+          requestID: this.questionnaire.requestID,
+          mutation: {
+            type: "set_custom_answer",
+            questionIndex: this.currentQuestionIndexValue,
+            value: mutation.value,
+          },
+        });
+        return;
+      case "clear_answer":
+        this.applyMutation({
+          sessionID: this.questionnaire.sessionID,
+          requestID: this.questionnaire.requestID,
+          mutation: {
+            type: "clear_answer",
+            questionIndex: this.currentQuestionIndexValue,
+          },
+        });
+    }
   }
 
   private applyMutation(command: UpdateQuestionnaireAnswerCommand): void {
@@ -356,4 +407,8 @@ function cloneDraftAnswers(
   return draftAnswers.map((slot) => ({
     selections: slot.selections.map((selection) => ({ ...selection })),
   }));
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
 }
