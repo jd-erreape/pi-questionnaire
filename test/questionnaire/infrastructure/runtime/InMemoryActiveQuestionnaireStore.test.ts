@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { Questionnaire } from "../../../extensions/questionnaire/domain/questionnaire.js";
-import { InMemoryActiveQuestionnaireStore } from "../../../extensions/questionnaire/infrastructure/runtime/InMemoryActiveQuestionnaireStore.js";
+import { Questionnaire } from "../../../../extensions/questionnaire/domain/questionnaire.js";
+import { InMemoryActiveQuestionnaireStore } from "../../../../extensions/questionnaire/infrastructure/runtime/InMemoryActiveQuestionnaireStore.js";
 
 function createQuestionnaire(
   sessionID: string,

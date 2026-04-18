@@ -24,7 +24,7 @@ describe("package bootstrap smoke tests", () => {
       check: "tsc --noEmit --project tsconfig.json",
       test: "vitest --run",
       "pack:check": "npm pack --dry-run --cache ./.npm-cache",
-      verify: "npm run lint && npm run check && npm test && npm run pack:check",
+      verify: "npm run pack:check && npm run lint && npm run check && npm test",
     });
     expect(packageJson.peerDependencies).toMatchObject({
       "@mariozechner/pi-coding-agent": "*",
