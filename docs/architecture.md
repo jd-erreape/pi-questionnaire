@@ -83,13 +83,13 @@ Purpose:
 - hold Pi-independent questionnaire concepts and rules
 - express internal normalized models and invariants
 - contain the core business logic of the package
+- prefer rich domain models where state, lifecycle, or invariants justify them
 
 Examples:
 
 - normalized questionnaire definition
-- questionnaire instance metadata
+- `Questionnaire` aggregate root with metadata, questions, and current answers
 - answer slot rules
-- validation and normalization policies
 - lifecycle invariants for submission and cancellation
 
 This layer should be usable and testable without Pi, TUI, or extension runtime code.
@@ -100,17 +100,19 @@ Purpose:
 
 - orchestrate use cases across the domain and external ports
 - coordinate runtime flow without owning low-level framework details
-- translate between external contract DTOs and domain operations
+- define application-facing command/result DTOs and runtime models
+- translate between external contract DTOs, application DTOs, and domain operations
+- treat application services as the boundary that performs `DTO -> Domain -> DTO`
 
 Examples:
 
 - execute questionnaire tool
 - prepare validated and normalized questionnaire requests
 - start a questionnaire instance
-- enforce one-active-questionnaire-per-session
+- initialize questionnaire interaction state
 - submit or cancel a questionnaire instance
 
-This layer owns workflow orchestration, not rendering.
+This layer owns workflow orchestration and boundary translation, not rendering.
 
 ### 3.4 `infrastructure`
 
@@ -136,11 +138,11 @@ Purpose:
 
 - implement TUI interaction and rendering
 - manage controller/view-model concerns for questionnaire UX
-- convert application/domain state into user-facing interaction state
+- convert application DTOs and models into user-facing interaction state
 
 Examples:
 
-- questionnaire controller
+- questionnaire interaction controller
 - questionnaire view model
 - TUI overlay or custom component
 - keyboard interaction handling
@@ -159,7 +161,7 @@ The architecture depends on strict dependency direction.
 - `domain` may depend on `contract` only when unavoidable, but should generally remain independent
 - `application` depends on `domain` and `contract`
 - `infrastructure` depends on `application`, `domain`, and `contract`
-- `presentation` depends on `application`, `domain`, and `contract` as needed
+- `presentation` depends on `application` and `contract`
 - `index.ts` wires the layers together
 
 ### Forbidden dependencies
@@ -168,6 +170,7 @@ The architecture depends on strict dependency direction.
 - `domain` must not import TUI code
 - `domain` must not import infrastructure adapters
 - `application` must not import concrete Pi UI implementation details directly
+- `presentation` must not import `domain` modules directly
 - `presentation` must not define core questionnaire business rules
 - `infrastructure` must not become the place where validation or domain invariants live
 
@@ -177,7 +180,7 @@ If a rule starts to require Pi runtime access, it belongs outside the domain.
 
 ## 5. Core model separation
 
-The code should distinguish four different kinds of models.
+The code should distinguish five different kinds of models.
 
 ### 5.1 Contract DTOs
 
@@ -201,25 +204,39 @@ Examples:
 - `QuestionnaireDefinition`
 - `QuestionDefinition`
 - `QuestionOptionDefinition`
+- `Questionnaire`
 - `AnswerSlot`
-- `QuestionnaireOutcome`
 
 These should express the package's internal rules clearly and independently of Pi.
+Stateful and invariant-heavy behavior should live here rather than being scattered across external policy helpers.
 
-### 5.3 Runtime/application models
+### 5.3 Application DTOs
 
-These represent live execution context.
+These define use-case boundaries.
 
 Examples:
 
-- `QuestionnaireInstance`
-- `QuestionnaireInstanceMetadata`
+- `StartQuestionnaireCommand`
+- `StartQuestionnaireResult`
+- `SubmitQuestionnaireCommand`
+- `SubmitQuestionnaireResult`
+- `QuestionnaireInstanceDto`
+
+These are the types that `presentation` and `infrastructure` should use when invoking application behavior.
+
+### 5.4 Application runtime models
+
+These represent live execution context inside the application layer and its internal collaboration with the domain.
+
+Examples:
+
 - active questionnaire registry state
-- use-case input/output models
+- use-case coordination state
+- internal mapping objects used while orchestrating domain rules
 
 These are internal execution objects, not public contract DTOs.
 
-### 5.4 Presentation models
+### 5.5 Presentation models
 
 These represent display or interaction state.
 
@@ -227,7 +244,7 @@ Examples:
 
 - focused question index
 - selected option state
-- custom input draft
+- custom input state
 - review/confirmation state
 - rendered labels and summaries
 
@@ -244,7 +261,7 @@ This package should use both object-oriented and functional styles intentionally
 - validation
 - normalization
 - result mapping
-- invariant checks
+- stateless boundary transformations
 - view-model derivation
 
 These operations are deterministic and easier to test as pure functions.
@@ -252,6 +269,7 @@ These operations are deterministic and easier to test as pure functions.
 ### Prefer objects or classes for
 
 - questionnaire instance lifecycle
+- questionnaire aggregate behavior
 - active questionnaire coordination
 - stateful controllers
 - concrete infrastructure adapters
@@ -261,6 +279,7 @@ A class is appropriate when there is meaningful identity, lifecycle, or evolving
 ### Avoid unnecessary ceremony
 
 Do not introduce a class, service, or factory unless it improves clarity for a real responsibility.
+Do not push core domain behavior into a catch-all `policies/` layer when the behavior belongs to a rich domain model with state and invariants.
 
 ---
 
@@ -313,6 +332,7 @@ Focus on:
 - normalization rules
 - duplicate detection
 - ordering and immutability rules
+- questionnaire aggregate behavior
 - answer slot invariants
 
 These should be fast, deterministic unit tests.
@@ -324,6 +344,7 @@ Focus on:
 - use-case orchestration
 - session-scoped concurrency rules
 - request ID and session ID handling
+- mapping between application DTOs and domain models
 - mapping outcomes to tool-level behavior
 
 These should use mocked ports.
@@ -343,10 +364,11 @@ These should stay narrow and implementation-focused.
 Focus on:
 
 - interaction state transitions
+- view-model derivation
 - keyboard intent handling
 - rendering-specific edge cases
 
-Keep presentation tests narrower than domain tests.
+Keep presentation tests narrower than domain tests and keep them independent from domain imports.
 
 ---
 
@@ -371,6 +393,8 @@ Implement application orchestration:
 - session ownership
 - request ID generation
 - one-active-questionnaire-per-session behavior
+- application DTOs that hide domain internals from presentation and infrastructure callers
+- application services that map `DTO -> Domain -> DTO`
 
 ### Later
 

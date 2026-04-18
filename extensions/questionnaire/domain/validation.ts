@@ -1,14 +1,4 @@
-export interface ValidationIssue {
-  message: string;
-  path?: string;
-}
+import type { Result } from "../result.js";
+import type { QuestionnaireValidationError } from "./errors.js";
 
-export type ValidationResult<T> =
-  | {
-      ok: true;
-      value: T;
-    }
-  | {
-      ok: false;
-      issues: ValidationIssue[];
-    };
+export type ValidationResult<T> = Result<T, QuestionnaireValidationError>;

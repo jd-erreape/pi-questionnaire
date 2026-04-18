@@ -1,18 +1,18 @@
 import { describe, expect, it } from "vitest";
 
+import { Questionnaire } from "../../../extensions/questionnaire/domain/questionnaire.js";
 import { InMemoryActiveQuestionnaireStore } from "../../../extensions/questionnaire/infrastructure/runtime/InMemoryActiveQuestionnaireStore.js";
-import type { QuestionnaireInstance } from "../../../extensions/questionnaire/domain/instance.js";
 
-function createInstance(
+function createQuestionnaire(
   sessionID: string,
   requestID: string,
-): QuestionnaireInstance {
-  return {
-    metadata: {
+): Questionnaire {
+  return Questionnaire.start(
+    {
       requestID,
       sessionID,
     },
-    definition: {
+    {
       questions: [
         {
           header: "Framework",
@@ -24,23 +24,23 @@ function createInstance(
         },
       ],
     },
-  };
+  );
 }
 
 describe("InMemoryActiveQuestionnaireStore", () => {
-  it("saves and retrieves an instance by session ID", () => {
+  it("saves and retrieves a questionnaire by session ID", () => {
     const store = new InMemoryActiveQuestionnaireStore();
-    const instance = createInstance("session-1", "req-1");
+    const questionnaire = createQuestionnaire("session-1", "req-1");
 
-    store.save(instance);
+    store.save(questionnaire);
 
-    expect(store.get("session-1")).toEqual(instance);
+    expect(store.get("session-1")).toEqual(questionnaire);
   });
 
-  it("deletes an instance by session ID", () => {
+  it("deletes a questionnaire by session ID", () => {
     const store = new InMemoryActiveQuestionnaireStore();
-    const instance = createInstance("session-1", "req-1");
-    store.save(instance);
+    const questionnaire = createQuestionnaire("session-1", "req-1");
+    store.save(questionnaire);
 
     store.delete("session-1");
 

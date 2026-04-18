@@ -126,7 +126,8 @@ For any implementation, refactor, or test change related to the `questionnaire` 
 - Follow the layered architecture defined in `docs/architecture.md`.
 - Keep UI architecture framework-independent.
 - Domain/runtime logic must not depend directly on a specific UI rendering approach.
-- UI should consume stable contract types and view-model-like state, not own the business rules.
+- UI should consume stable application DTOs/models and presentation state, not own the business rules.
+- Application services are the architectural boundary and should follow `DTO -> Domain -> DTO`.
 - Prefer small composable modules over large monolithic extension files.
 - Preserve clear separation between:
   - contract
@@ -134,7 +135,13 @@ For any implementation, refactor, or test change related to the `questionnaire` 
   - application
   - infrastructure
   - presentation
-- Keep request/result contract DTOs separate from internal domain models.
+- Keep public contract DTOs, application DTOs/models, domain models, and presentation models distinct.
+- Use application-layer command/result DTOs at use-case boundaries instead of exposing domain entities directly.
+- `presentation` must not import from `domain`; it should depend on `application` and `contract` only.
+- `presentation` should go through application use cases for business actions.
+- `application` is responsible for mapping between contract/application DTOs and domain models.
+- Prefer rich domain models for stateful or invariant-heavy questionnaire behavior.
+- Keep request validation/normalization functional where appropriate, but do not push core domain behavior into a catch-all `policies/` layer.
 - Do not import Pi APIs into `domain`.
 - Do not place domain policy in `infrastructure`.
 - Do not place core questionnaire rules in `presentation`.

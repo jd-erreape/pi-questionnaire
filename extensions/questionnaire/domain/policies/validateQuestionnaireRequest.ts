@@ -3,7 +3,12 @@ import type {
   QuestionnaireQuestionDto,
   QuestionnaireRequestDto,
 } from "../../contract/request.js";
-import type { ValidationIssue, ValidationResult } from "../validation.js";
+import { Result } from "../../result.js";
+import {
+  QuestionnaireValidationError,
+  type ValidationIssue,
+} from "../errors.js";
+import type { ValidationResult } from "../validation.js";
 
 const REQUEST_FIELDS = new Set(["title", "instructions", "questions"]);
 const QUESTION_FIELDS = new Set([
@@ -20,10 +25,11 @@ export function validateQuestionnaireRequest(
   input: unknown,
 ): ValidationResult<QuestionnaireRequestDto> {
   if (!isRecord(input)) {
-    return {
-      ok: false,
-      issues: [{ message: "request must be an object" }],
-    };
+    return Result.error(
+      new QuestionnaireValidationError([
+        { message: "request must be an object" },
+      ]),
+    );
   }
 
   const issues: ValidationIssue[] = [];
@@ -46,16 +52,10 @@ export function validateQuestionnaireRequest(
   }
 
   if (issues.length > 0) {
-    return {
-      ok: false,
-      issues,
-    };
+    return Result.error(new QuestionnaireValidationError(issues));
   }
 
-  return {
-    ok: true,
-    value: toQuestionnaireRequestDto(input),
-  };
+  return Result.ok(toQuestionnaireRequestDto(input));
 }
 
 function validateQuestionArray(
