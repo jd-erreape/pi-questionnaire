@@ -134,28 +134,28 @@ export class QuestionnaireViewModel {
   }
 
   selectOption(label: string): void {
-    this.applyCurrentQuestionMutation({
+    this.applyFocusedMutation({
       type: "select_option",
       label,
     });
   }
 
   toggleOption(label: string): void {
-    this.applyCurrentQuestionMutation({
+    this.applyFocusedMutation({
       type: "toggle_option",
       label,
     });
   }
 
   setCustomAnswer(value: string): void {
-    this.applyCurrentQuestionMutation({
+    this.applyFocusedMutation({
       type: "set_custom_answer",
       value,
     });
   }
 
   clearAnswer(): void {
-    this.applyCurrentQuestionMutation({
+    this.applyFocusedMutation({
       type: "clear_answer",
     });
   }
@@ -209,7 +209,7 @@ export class QuestionnaireViewModel {
     return issueByQuestionIndex;
   }
 
-  private applyCurrentQuestionMutation(
+  private applyFocusedMutation(
     mutation:
       | { type: "select_option"; label: string }
       | { type: "toggle_option"; label: string }
