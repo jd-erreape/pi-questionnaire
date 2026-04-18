@@ -11,6 +11,7 @@ import {
   QuestionnaireNotActiveError,
 } from "../../../extensions/questionnaire/application/errors.js";
 import type {
+  CancelQuestionnaireFunction,
   SubmitQuestionnaireFunction,
   UpdateQuestionnaireAnswerFunction,
 } from "../../../extensions/questionnaire/presentation/controller/QuestionnaireInteractionController.js";
@@ -95,12 +96,20 @@ function createSubmitFailure(
   });
 }
 
+function createCancelSuccess(): CancelQuestionnaireFunction {
+  return () => ({
+    ok: true,
+    value: createSingleSelectInstance(),
+  });
+}
+
 describe("QuestionnaireInteractionController", () => {
   it("initializes answer state locally and starts at question index 0", () => {
     const controller = new QuestionnaireInteractionController(
       createMultiQuestionInstance(),
       createAnswerUpdateStub([{ selections: [] }, { selections: [] }]),
       createSubmitSuccess(),
+      createCancelSuccess(),
     );
 
     expect(controller.getState()).toEqual({
@@ -115,6 +124,7 @@ describe("QuestionnaireInteractionController", () => {
       createSingleSelectInstance(),
       createAnswerUpdateStub([{ selections: [] }]),
       createSubmitSuccess(),
+      createCancelSuccess(),
     );
 
     controller.selectOption(0, "Vue");
@@ -131,6 +141,7 @@ describe("QuestionnaireInteractionController", () => {
       createMultiQuestionInstance(),
       createAnswerUpdateStub([{ selections: [] }, { selections: [] }]),
       createSubmitSuccess(),
+      createCancelSuccess(),
     );
 
     controller.toggleOption(1, "Unit tests");
@@ -155,6 +166,7 @@ describe("QuestionnaireInteractionController", () => {
       createMultiQuestionInstance(),
       createAnswerUpdateStub([{ selections: [] }, { selections: [] }]),
       createSubmitSuccess(),
+      createCancelSuccess(),
     );
 
     controller.setCustomAnswer(1, "Performance tests");
@@ -169,6 +181,7 @@ describe("QuestionnaireInteractionController", () => {
       createSingleSelectInstance(),
       createAnswerUpdateStub([{ selections: [] }]),
       createSubmitSuccess(),
+      createCancelSuccess(),
     );
 
     controller.selectOption(0, "React");
@@ -187,6 +200,7 @@ describe("QuestionnaireInteractionController", () => {
           message: "question at index 0 requires at least one selection",
         },
       ]),
+      createCancelSuccess(),
     );
 
     const result = controller.submit();
@@ -247,6 +261,7 @@ describe("QuestionnaireInteractionController", () => {
       instance,
       createAnswerUpdateStub([{ selections: [] }]),
       submitQuestionnaire,
+      createCancelSuccess(),
     );
 
     controller.submit();
@@ -278,12 +293,52 @@ describe("QuestionnaireInteractionController", () => {
           message: "question at index 0 requires at least one selection",
         },
       ]),
+      createCancelSuccess(),
     );
 
     controller.submit();
     controller.selectOption(0, "Vue");
 
     expect(controller.getState().submissionIssues).toBeUndefined();
+  });
+
+  it("cancels the active questionnaire and returns its instance data", () => {
+    const instance = createSingleSelectInstance();
+    const cancelQuestionnaire: CancelQuestionnaireFunction = (command) => ({
+      ok: true,
+      value: {
+        ...instance,
+        requestID: command.requestID,
+        sessionID: command.sessionID,
+      },
+    });
+    const controller = new QuestionnaireInteractionController(
+      instance,
+      createAnswerUpdateStub([{ selections: [] }]),
+      createSubmitSuccess(),
+      cancelQuestionnaire,
+    );
+
+    expect(controller.cancel()).toEqual({
+      ok: true,
+      value: instance,
+    });
+  });
+
+  it("throws when cancel reports no active questionnaire", () => {
+    const controller = new QuestionnaireInteractionController(
+      createSingleSelectInstance(),
+      createAnswerUpdateStub([{ selections: [] }]),
+      createSubmitSuccess(),
+      () => ({
+        ok: false,
+        error: new QuestionnaireNotActiveError(),
+      }),
+    );
+
+    expect(() => controller.cancel()).toThrowError(
+      "Questionnaire is not active.",
+    );
   });
 
   it("throws when a mutation result reports no active questionnaire", () => {
@@ -294,6 +349,7 @@ describe("QuestionnaireInteractionController", () => {
         error: new QuestionnaireNotActiveError(),
       }),
       createSubmitSuccess(),
+      createCancelSuccess(),
     );
 
     expect(() => controller.selectOption(0, "React")).toThrowError(

@@ -9,6 +9,10 @@ import {
   QuestionnaireNotActiveError,
 } from "../../application/errors.js";
 import type {
+  CancelQuestionnaireCommand,
+  CancelQuestionnaireResult,
+} from "../../application/use-cases/cancelQuestionnaire.js";
+import type {
   SubmitQuestionnaireCommand,
   SubmitQuestionnaireResult,
 } from "../../application/use-cases/submitQuestionnaire.js";
@@ -25,7 +29,11 @@ export type SubmitQuestionnaireFunction = (
   command: SubmitQuestionnaireCommand,
 ) => SubmitQuestionnaireResult;
 
-export type { SubmitQuestionnaireResult };
+export type CancelQuestionnaireFunction = (
+  command: CancelQuestionnaireCommand,
+) => CancelQuestionnaireResult;
+
+export type { SubmitQuestionnaireResult, CancelQuestionnaireResult };
 
 export interface QuestionnaireInteractionState {
   currentQuestionIndex: number;
@@ -44,6 +52,7 @@ export class QuestionnaireInteractionController {
     private readonly instance: QuestionnaireInstanceDto,
     private readonly updateQuestionnaireAnswer: UpdateQuestionnaireAnswerFunction,
     private readonly submitQuestionnaire: SubmitQuestionnaireFunction,
+    private readonly cancelQuestionnaire: CancelQuestionnaireFunction,
   ) {
     this.sessionID = instance.sessionID;
     this.requestID = instance.requestID;
@@ -139,6 +148,21 @@ export class QuestionnaireInteractionController {
     }
 
     this.submissionIssues = undefined;
+    return result;
+  }
+
+  cancel(): CancelQuestionnaireResult {
+    this.submissionIssues = undefined;
+
+    const result = this.cancelQuestionnaire({
+      sessionID: this.sessionID,
+      requestID: this.requestID,
+    });
+
+    if (!result.ok) {
+      throw new Error(result.error.message);
+    }
+
     return result;
   }
 
