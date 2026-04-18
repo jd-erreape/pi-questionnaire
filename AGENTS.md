@@ -138,6 +138,8 @@ For any implementation, refactor, or test change related to the `questionnaire` 
 - Do not import Pi APIs into `domain`.
 - Do not place domain policy in `infrastructure`.
 - Do not place core questionnaire rules in `presentation`.
+- Do not introduce barrel files (`index.ts` files that only re-export sibling modules) for internal module organization.
+- Prefer direct imports from the defining module so dependencies stay explicit and easy to trace.
 
 ## Dependency policy
 
