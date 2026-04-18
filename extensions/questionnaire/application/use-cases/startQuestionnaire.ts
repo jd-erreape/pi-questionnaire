@@ -1,7 +1,15 @@
+import { normalizeQuestionnaireRequest } from "../../domain/policies/normalizeQuestionnaireRequest.js";
+import { validateQuestionnaireRequest } from "../../domain/policies/validateQuestionnaireRequest.js";
+import { Questionnaire } from "../../domain/questionnaire.js";
+import { Result, type Result as ResultType } from "../../result.js";
+import type { QuestionnaireInstanceDto } from "../dto/questionnaire-instance.js";
+import {
+  InteractiveUIRequiredError,
+  InvalidQuestionnaireRequestError,
+  QuestionnaireAlreadyActiveError,
+} from "../errors.js";
+import { toQuestionnaireInstanceDto } from "../mappers/questionnaire-instance.js";
 import type { ActiveQuestionnaireStore, IdGenerator } from "../ports.js";
-import { prepareQuestionnaireRequest } from "./prepareQuestionnaireRequest.js";
-import type { QuestionnaireInstance } from "../../domain/instance.js";
-import type { ValidationIssue } from "../../domain/validation.js";
 
 export interface StartQuestionnaireCommand {
   input: unknown;
@@ -14,78 +22,49 @@ export interface StartQuestionnaireDependencies {
   idGenerator: IdGenerator;
 }
 
-export type StartQuestionnaireFailure =
-  | {
-      kind: "invalid_request";
-      issues: ValidationIssue[];
-    }
-  | {
-      kind: "interactive_ui_required";
-    }
-  | {
-      kind: "questionnaire_already_active";
-    };
+export type StartQuestionnaireError =
+  | InvalidQuestionnaireRequestError
+  | InteractiveUIRequiredError
+  | QuestionnaireAlreadyActiveError;
 
-export type StartQuestionnaireResult =
-  | {
-      ok: true;
-      value: QuestionnaireInstance;
-    }
-  | {
-      ok: false;
-      failure: StartQuestionnaireFailure;
-    };
+export type StartQuestionnaireResult = ResultType<
+  QuestionnaireInstanceDto,
+  StartQuestionnaireError
+>;
 
 export function startQuestionnaire(
   command: StartQuestionnaireCommand,
   dependencies: StartQuestionnaireDependencies,
 ): StartQuestionnaireResult {
-  const prepared = prepareQuestionnaireRequest(command.input);
+  const validationResult = validateQuestionnaireRequest(command.input);
 
-  if (!prepared.ok) {
-    return {
-      ok: false,
-      failure: {
-        kind: "invalid_request",
-        issues: prepared.issues,
-      },
-    };
+  if (!validationResult.ok) {
+    return Result.error(
+      new InvalidQuestionnaireRequestError(validationResult.error.issues),
+    );
   }
 
   if (!command.hasInteractiveUI) {
-    return {
-      ok: false,
-      failure: {
-        kind: "interactive_ui_required",
-      },
-    };
+    return Result.error(new InteractiveUIRequiredError());
   }
 
-  const existingInstance = dependencies.activeQuestionnaireStore.get(
+  const existingQuestionnaire = dependencies.activeQuestionnaireStore.get(
     command.sessionID,
   );
 
-  if (existingInstance) {
-    return {
-      ok: false,
-      failure: {
-        kind: "questionnaire_already_active",
-      },
-    };
+  if (existingQuestionnaire) {
+    return Result.error(new QuestionnaireAlreadyActiveError());
   }
 
-  const instance: QuestionnaireInstance = {
-    metadata: {
+  const questionnaire = Questionnaire.start(
+    {
       requestID: dependencies.idGenerator.nextRequestID(),
       sessionID: command.sessionID,
     },
-    definition: prepared.value,
-  };
+    normalizeQuestionnaireRequest(validationResult.value),
+  );
 
-  dependencies.activeQuestionnaireStore.save(instance);
+  dependencies.activeQuestionnaireStore.save(questionnaire);
 
-  return {
-    ok: true,
-    value: instance,
-  };
+  return Result.ok(toQuestionnaireInstanceDto(questionnaire));
 }

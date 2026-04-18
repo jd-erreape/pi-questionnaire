@@ -1,11 +1,11 @@
-import type { QuestionnaireInstance } from "../domain/instance.js";
+import type { Questionnaire } from "../domain/questionnaire.js";
 
 export interface IdGenerator {
   nextRequestID(): string;
 }
 
 export interface ActiveQuestionnaireStore {
-  get(sessionID: string): QuestionnaireInstance | undefined;
-  save(instance: QuestionnaireInstance): void;
+  get(sessionID: string): Questionnaire | undefined;
+  save(questionnaire: Questionnaire): void;
   delete(sessionID: string): void;
 }
