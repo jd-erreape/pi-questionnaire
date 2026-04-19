@@ -1,5 +1,5 @@
-import { normalizeQuestionnaireRequest } from "../../domain/policies/normalizeQuestionnaireRequest.js";
-import { validateQuestionnaireRequest } from "../../domain/policies/validateQuestionnaireRequest.js";
+import { normalizeQuestionnaireRequest } from "../request/normalizeQuestionnaireRequest.js";
+import { validateQuestionnaireRequest } from "../request/validateQuestionnaireRequest.js";
 import { Questionnaire } from "../../domain/questionnaire.js";
 import { Result, type Result as ResultType } from "../../result.js";
 import type { QuestionnaireDto } from "../dto/questionnaire.js";

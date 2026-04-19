@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { normalizeQuestionnaireRequest } from "../../../extensions/questionnaire/domain/policies/normalizeQuestionnaireRequest.js";
+import { normalizeQuestionnaireRequest } from "../../../../extensions/questionnaire/application/request/normalizeQuestionnaireRequest.js";
 
 describe("normalizeQuestionnaireRequest", () => {
   it("trims strings, omits empty optional strings, and applies defaults", () => {

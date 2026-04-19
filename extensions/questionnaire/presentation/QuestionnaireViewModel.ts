@@ -207,6 +207,7 @@ export class QuestionnaireViewModel {
 
   dispose(): void {
     this.submissionProblemsValue = undefined;
+
     this.disposeQuestionnaire({
       sessionID: this.questionnaire.sessionID,
       requestID: this.questionnaire.requestID,

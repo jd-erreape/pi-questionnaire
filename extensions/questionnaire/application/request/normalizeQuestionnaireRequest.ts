@@ -1,5 +1,5 @@
-import type { QuestionnaireInputDto } from "../../application/dto/questionnaire-input.js";
-import type { QuestionnaireDefinition } from "../definition.js";
+import type { QuestionnaireInputDto } from "../dto/questionnaire-input.js";
+import type { QuestionnaireDefinition } from "../../domain/definition.js";
 
 export function normalizeQuestionnaireRequest(
   request: QuestionnaireInputDto,

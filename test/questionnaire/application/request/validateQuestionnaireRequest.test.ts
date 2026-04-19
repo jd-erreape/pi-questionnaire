@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { QuestionnaireValidationError } from "../../../extensions/questionnaire/domain/errors.js";
-import { validateQuestionnaireRequest } from "../../../extensions/questionnaire/domain/policies/validateQuestionnaireRequest.js";
+import { QuestionnaireValidationError } from "../../../../extensions/questionnaire/domain/errors.js";
+import { validateQuestionnaireRequest } from "../../../../extensions/questionnaire/application/request/validateQuestionnaireRequest.js";
 
 function createValidRequest() {
   return {

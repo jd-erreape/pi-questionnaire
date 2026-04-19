@@ -94,8 +94,8 @@ Examples:
 - caller-authored input DTOs such as `QuestionnaireInputDto`
 - normalized definition DTOs such as `QuestionnaireDefinitionDto`
 - questionnaire lifecycle DTOs such as `QuestionnaireDto` and `SubmittedQuestionnaireDto`
+- request validation and normalization at the application boundary
 - execute questionnaire tool
-- prepare validated and normalized questionnaire requests
 - start a questionnaire instance
 - initialize questionnaire interaction state
 - submit or cancel a questionnaire instance
@@ -160,7 +160,6 @@ The architecture depends on strict dependency direction.
 ### Allowed dependencies
 
 - core `domain` models depend on nothing project-specific and should generally remain independent
-- `domain/policies` may depend on application DTOs when validating or normalizing boundary input for the domain
 - `application` depends on `domain`
 - `infrastructure` depends on `application` and `domain`
 - `presentation` depends on `application`

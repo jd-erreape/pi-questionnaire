@@ -1,13 +1,13 @@
-import type { QuestionnaireOptionDto } from "../../application/dto/questionnaire-definition.js";
+import type { QuestionnaireOptionDto } from "../dto/questionnaire-definition.js";
 import type {
   QuestionnaireInputDto,
   QuestionnaireInputQuestionDto,
-} from "../../application/dto/questionnaire-input.js";
+} from "../dto/questionnaire-input.js";
 import { Result, type Result as ResultType } from "../../result.js";
 import {
   QuestionnaireValidationError,
   type ValidationProblem,
-} from "../errors.js";
+} from "../../domain/errors.js";
 
 const REQUEST_FIELDS = new Set(["title", "instructions", "questions"]);
 const QUESTION_FIELDS = new Set([
