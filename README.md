@@ -1,54 +1,43 @@
 # pi-questionnaire
 
-Bootstrap for a publishable **Pi package** that will provide a `questionnaire` extension/tool.
+Interactive `questionnaire` tool for Pi.
 
-## Status
+Use it when an agent needs a short, structured clarification step before continuing work - for example to confirm scope, choose between implementation options, or collect a few bounded preferences.
 
-This repository currently contains only the project skeleton:
+## What it provides
 
-- Pi package manifest
-- TypeScript setup
-- ESLint + Prettier
-- Vitest smoke tests
-- GitHub Actions CI
-- a bootstrap extension entrypoint for real Pi install/load checks
+- Pi tool: `questionnaire`
+- small interactive questionnaires in local Pi sessions
+- 1 to 5 questions per questionnaire
+- 2 to 5 options per question
+- single-select or multi-select questions
+- optional custom answers
+- structured submitted results for the calling model
+- explicit cancellation handling
+- fail-fast behavior when interactive UI is unavailable
 
-It does **not** implement the real questionnaire flow yet.
+## Typical use cases
 
-## Bootstrap smoke target
+- clarifying requirements before implementation
+- choosing frameworks, libraries, or scope
+- collecting constrained setup preferences
+- resolving ambiguity without a long back-and-forth chat
 
-The extension currently exposes:
+## Install
 
-- command: `/questionnaire-status`
-- tool: `questionnaire_status`
-
-Both return the same bootstrap-only status message so the package can be validated in a real Pi installation.
-
-## Install and test with Pi
-
-### Quick extension loop
+### Quick local extension loop
 
 ```bash
 pi -e ./extensions/questionnaire/index.ts
 ```
 
-### Real package loop
-
-Install this package into another Pi project using a local path:
+### Install into another Pi project
 
 ```bash
 pi install /absolute/path/to/pi-questionnaire -l
 ```
 
-Then start Pi in that project and verify the bootstrap command/tool is available.
-
-## Local development checks
-
-```bash
-npm run verify
-```
-
-Or run the individual checks:
+## Local checks
 
 ```bash
 npm run lint
@@ -60,5 +49,4 @@ npm run pack:check
 ## Notes
 
 - Pi package resources are declared through the `pi` manifest in `package.json`.
-- Pi core libraries are listed as `peerDependencies` and also installed locally as `devDependencies` for development.
-- The package is source-first TypeScript and relies on Pi's documented TypeScript loading flow.
+- The package is source-first TypeScript and follows Pi's TypeScript loading flow.

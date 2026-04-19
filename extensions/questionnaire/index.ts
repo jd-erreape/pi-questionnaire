@@ -47,7 +47,7 @@ const questionnaireQuestionSchema = Type.Object(
     multiSelect: Type.Optional(
       Type.Boolean({
         description:
-          "Default to true use it only when the user should be allowed to choose multiple options, otherwise set to false",
+          "Defaults to false. Set true only when the user should be allowed to choose multiple options.",
       }),
     ),
     allowCustom: Type.Optional(
