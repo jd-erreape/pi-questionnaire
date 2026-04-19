@@ -1,15 +1,15 @@
 import type { ExtensionContext } from "@mariozechner/pi-coding-agent";
 
-import type { QuestionnaireInputDto } from "../../application/dto/questionnaire-input.js";
-import type { QuestionnaireDetailsDto } from "../../application/dto/questionnaire-result.js";
-import { cancelQuestionnaire } from "../../application/use-cases/cancelQuestionnaire.js";
-import { disposeQuestionnaire } from "../../application/use-cases/disposeQuestionnaire.js";
-import { startQuestionnaire } from "../../application/use-cases/startQuestionnaire.js";
-import { submitQuestionnaire } from "../../application/use-cases/submitQuestionnaire.js";
-import { updateQuestionnaireAnswer } from "../../application/use-cases/updateQuestionnaireAnswer.js";
-import { QuestionnaireViewModel } from "../../presentation/QuestionnaireViewModel.js";
-import { InMemoryActiveQuestionnaireStore } from "../runtime/InMemoryActiveQuestionnaireStore.js";
-import { RandomIdGenerator } from "../runtime/RandomIdGenerator.js";
+import type { QuestionnaireInputDto } from "../application/dto/questionnaire-input.js";
+import type { QuestionnaireDetailsDto } from "../application/dto/questionnaire-result.js";
+import { cancelQuestionnaire } from "../application/use-cases/cancelQuestionnaire.js";
+import { disposeQuestionnaire } from "../application/use-cases/disposeQuestionnaire.js";
+import { startQuestionnaire } from "../application/use-cases/startQuestionnaire.js";
+import { submitQuestionnaire } from "../application/use-cases/submitQuestionnaire.js";
+import { updateQuestionnaireAnswer } from "../application/use-cases/updateQuestionnaireAnswer.js";
+import { QuestionnaireViewModel } from "../presentation/QuestionnaireViewModel.js";
+import { InMemoryActiveQuestionnaireStore } from "../infrastructure/runtime/InMemoryActiveQuestionnaireStore.js";
+import { RandomIdGenerator } from "../infrastructure/runtime/RandomIdGenerator.js";
 import {
   mapCancelledOutcome,
   mapStartFailure,

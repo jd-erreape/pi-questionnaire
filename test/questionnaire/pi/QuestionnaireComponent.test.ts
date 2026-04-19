@@ -11,7 +11,7 @@ import { InvalidQuestionnaireAnswersError } from "../../../extensions/questionna
 import {
   QuestionnaireComponent,
   type QuestionnaireComponentDone,
-} from "../../../extensions/questionnaire/presentation/QuestionnaireComponent.js";
+} from "../../../extensions/questionnaire/pi/QuestionnaireComponent.js";
 import type {
   CancelQuestionnaireFunction,
   DisposeQuestionnaireFunction,

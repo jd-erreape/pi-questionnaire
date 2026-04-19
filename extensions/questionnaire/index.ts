@@ -5,9 +5,9 @@ import type {
 import { Type } from "@sinclair/typebox";
 
 import type { QuestionnaireDetailsDto } from "./application/dto/questionnaire-result.js";
-import { executeQuestionnaireTool } from "./infrastructure/pi/executeQuestionnaireTool.js";
-import { renderQuestionnaireToolCall } from "./infrastructure/pi/renderQuestionnaireToolCall.js";
-import { renderQuestionnaireToolResult } from "./infrastructure/pi/renderQuestionnaireToolResult.js";
+import { executeQuestionnaireTool } from "./pi/executeQuestionnaireTool.js";
+import { renderQuestionnaireToolCall } from "./pi/renderQuestionnaireToolCall.js";
+import { renderQuestionnaireToolResult } from "./pi/renderQuestionnaireToolResult.js";
 
 const questionnaireOptionSchema = Type.Object(
   {

@@ -57,6 +57,7 @@ domain/
 application/
 infrastructure/
 presentation/
+pi/
 ```
 
 ### 3.1 `domain`
@@ -105,35 +106,50 @@ This layer owns workflow orchestration and the package's public DTO boundary, no
 
 Purpose:
 
-- provide concrete adapters for Pi runtime and other technical concerns
+- provide concrete technical adapters that are not themselves the Pi UI/tool boundary
 - implement the ports required by the application layer
 - keep framework and environment specifics out of the domain
 
 Examples:
 
-- Pi tool registration adapter
-- session ID access via Pi session APIs
 - in-memory active questionnaire store
 - request ID generation
-- mapping to Pi tool result envelopes
+- other technical runtime adapters that support application use cases
 
-This layer is where the code touches Pi-specific APIs.
+This layer should stay implementation-focused and should not become the place where validation or domain invariants live.
 
 ### 3.4 `presentation`
 
 Purpose:
 
-- implement TUI interaction and rendering
-- manage questionnaire UX state and view-model concerns
+- manage framework-independent questionnaire UX state and view-model concerns
 - convert application DTOs and models into user-facing interaction state
+- provide headless presentation glue that can be consumed by a concrete UI layer
 
 Examples:
 
 - questionnaire view model / presentation model
-- TUI overlay or custom component
-- keyboard interaction handling
+- keyboard intent translation
+- presentation-only interaction helpers
 
 This layer should not become the source of truth for business rules.
+
+### 3.5 `pi`
+
+Purpose:
+
+- hold the Pi-specific tool and TUI integration layer
+- adapt the headless presentation model to Pi's tool, render, and TUI APIs
+- keep Pi-specific rendering and custom component code out of the headless presentation layer
+
+Examples:
+
+- Pi tool execution adapter
+- tool call / result renderers
+- Pi result-envelope mapping
+- Pi custom component implementation
+
+This layer is where the code touches Pi-specific APIs.
 
 ---
 
@@ -148,6 +164,7 @@ The architecture depends on strict dependency direction.
 - `application` depends on `domain`
 - `infrastructure` depends on `application` and `domain`
 - `presentation` depends on `application`
+- `pi` depends on `application`, `presentation`, and `infrastructure`
 - `index.ts` wires the layers together
 
 ### Forbidden dependencies
@@ -159,6 +176,7 @@ The architecture depends on strict dependency direction.
 - `application` must not import concrete Pi UI implementation details directly
 - `presentation` must not import `domain` modules directly
 - `presentation` must not define core questionnaire business rules
+- `pi` must not define core questionnaire business rules
 - `infrastructure` must not become the place where validation or domain invariants live
 
 If a rule starts to require Pi runtime access, it belongs outside the domain.
@@ -201,7 +219,7 @@ Examples:
 - `SubmitQuestionnaireCommand`
 - `SubmitQuestionnaireResult`
 
-These are the types that `presentation` and `infrastructure` should use when invoking application behavior.
+These are the types that `presentation`, `pi`, and `infrastructure` should use when invoking application behavior.
 
 ### 5.3 Application runtime models
 
@@ -273,6 +291,7 @@ extensions/questionnaire/
   application/
   infrastructure/
   presentation/
+  pi/
 ```
 
 Tests should mirror the implementation structure:
@@ -283,6 +302,7 @@ test/questionnaire/
   application/
   infrastructure/
   presentation/
+  pi/
 ```
 
 The presence of a layer directory does not require immediate implementation inside it.
@@ -323,9 +343,9 @@ These should use mocked ports.
 
 Focus on:
 
-- Pi adapter integration behavior
-- result envelope translation
 - active questionnaire storage behavior
+- request ID generation
+- narrow technical adapter behavior
 
 These should stay narrow and implementation-focused.
 
@@ -336,9 +356,17 @@ Focus on:
 - interaction state transitions
 - view-model derivation
 - keyboard intent handling
-- rendering-specific edge cases
 
 Keep presentation tests narrower than domain tests and keep them independent from domain imports.
+
+### Pi
+
+Focus on:
+
+- Pi adapter integration behavior
+- result envelope translation
+- custom component rendering and input handling
+- Pi-specific UI lifecycle behavior
 
 ---
 
@@ -368,7 +396,7 @@ Implement application orchestration:
 
 ### Later
 
-Implement presentation and Pi-specific infrastructure:
+Implement presentation and Pi-specific integration:
 
 - interactive TUI flow
 - cancellation handling

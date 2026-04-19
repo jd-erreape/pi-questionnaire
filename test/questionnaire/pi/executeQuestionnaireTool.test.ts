@@ -1,8 +1,8 @@
 import type { ExtensionContext } from "@mariozechner/pi-coding-agent";
 import { describe, expect, it, vi } from "vitest";
 
-import type { SubmittedQuestionnaireDto } from "../../../../extensions/questionnaire/application/dto/questionnaire-submission.js";
-import { executeQuestionnaireTool } from "../../../../extensions/questionnaire/infrastructure/pi/executeQuestionnaireTool.js";
+import type { SubmittedQuestionnaireDto } from "../../../extensions/questionnaire/application/dto/questionnaire-submission.js";
+import { executeQuestionnaireTool } from "../../../extensions/questionnaire/pi/executeQuestionnaireTool.js";
 
 function createSubmittedQuestionnaireDto(): SubmittedQuestionnaireDto {
   return {

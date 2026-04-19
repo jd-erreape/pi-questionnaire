@@ -3,8 +3,8 @@ import type { ExtensionContext } from "@mariozechner/pi-coding-agent";
 import {
   QuestionnaireComponent,
   type QuestionnaireUiOutcome,
-} from "../../presentation/QuestionnaireComponent.js";
-import { QuestionnaireViewModel } from "../../presentation/QuestionnaireViewModel.js";
+} from "./QuestionnaireComponent.js";
+import { QuestionnaireViewModel } from "../presentation/QuestionnaireViewModel.js";
 
 export async function runQuestionnaireUi(
   ctx: ExtensionContext,

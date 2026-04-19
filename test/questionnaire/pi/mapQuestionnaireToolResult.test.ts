@@ -1,17 +1,17 @@
 import { describe, expect, it } from "vitest";
 
-import type { QuestionnaireDto } from "../../../../extensions/questionnaire/application/dto/questionnaire.js";
-import type { SubmittedQuestionnaireDto } from "../../../../extensions/questionnaire/application/dto/questionnaire-submission.js";
+import type { QuestionnaireDto } from "../../../extensions/questionnaire/application/dto/questionnaire.js";
+import type { SubmittedQuestionnaireDto } from "../../../extensions/questionnaire/application/dto/questionnaire-submission.js";
 import {
   InteractiveUIRequiredError,
   InvalidQuestionnaireRequestError,
   QuestionnaireAlreadyActiveError,
-} from "../../../../extensions/questionnaire/application/errors.js";
+} from "../../../extensions/questionnaire/application/errors.js";
 import {
   mapCancelledOutcome,
   mapStartFailure,
   mapSubmittedOutcome,
-} from "../../../../extensions/questionnaire/infrastructure/pi/mapQuestionnaireToolResult.js";
+} from "../../../extensions/questionnaire/pi/mapQuestionnaireToolResult.js";
 
 function createQuestionnaireDto(): QuestionnaireDto {
   return {

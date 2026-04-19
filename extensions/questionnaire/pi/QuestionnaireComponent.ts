@@ -8,8 +8,8 @@ import {
 
 import type { QuestionnaireDto } from "../application/dto/questionnaire.js";
 import type { SubmittedQuestionnaireDto } from "../application/dto/questionnaire-submission.js";
-import { dispatchQuestionnaireIntent } from "./QuestionnaireIntent.js";
-import { QuestionnaireViewModel } from "./QuestionnaireViewModel.js";
+import { dispatchQuestionnaireIntent } from "../presentation/QuestionnaireIntent.js";
+import { QuestionnaireViewModel } from "../presentation/QuestionnaireViewModel.js";
 
 export type QuestionnaireUiOutcome =
   | {

@@ -1,13 +1,13 @@
 import type { ExtensionContext } from "@mariozechner/pi-coding-agent";
 import { describe, expect, it, vi } from "vitest";
 
-import type { QuestionnaireDto } from "../../../../extensions/questionnaire/application/dto/questionnaire.js";
+import type { QuestionnaireDto } from "../../../extensions/questionnaire/application/dto/questionnaire.js";
 import {
   QuestionnaireComponent,
   type QuestionnaireUiOutcome,
-} from "../../../../extensions/questionnaire/presentation/QuestionnaireComponent.js";
-import { QuestionnaireViewModel } from "../../../../extensions/questionnaire/presentation/QuestionnaireViewModel.js";
-import { runQuestionnaireUi } from "../../../../extensions/questionnaire/infrastructure/pi/runQuestionnaireUi.js";
+} from "../../../extensions/questionnaire/pi/QuestionnaireComponent.js";
+import { QuestionnaireViewModel } from "../../../extensions/questionnaire/presentation/QuestionnaireViewModel.js";
+import { runQuestionnaireUi } from "../../../extensions/questionnaire/pi/runQuestionnaireUi.js";
 
 function createQuestionnaireDto(): QuestionnaireDto {
   return {
