@@ -3,31 +3,32 @@ import {
   QuestionnaireSubmissionError,
   type QuestionnaireSubmissionProblem,
 } from "./errors.js";
-import type { AnswerSlot } from "./answer.js";
 import type { QuestionnaireDefinition } from "./definition.js";
 
-export interface QuestionnaireMetadata {
+interface QuestionnaireMetadata {
   requestID: string;
   sessionID: string;
 }
 
-export interface QuestionnaireAnswerSelection {
+interface QuestionnaireAnswerSelection {
   source: "option" | "custom";
   value: string;
 }
 
-export interface QuestionnaireAnswerStateSlot {
+interface QuestionnaireAnswerStateSlot {
   selections: QuestionnaireAnswerSelection[];
 }
 
-export type QuestionnaireAnswerState = QuestionnaireAnswerStateSlot[];
+type QuestionnaireAnswerState = QuestionnaireAnswerStateSlot[];
 
-export type QuestionnaireSubmissionResult = ResultType<
+interface AnswerSlot {
+  selections: string[];
+}
+
+type QuestionnaireSubmissionResult = ResultType<
   AnswerSlot[],
   QuestionnaireSubmissionError
 >;
-
-export { QuestionnaireSubmissionError };
 
 export class Questionnaire {
   private constructor(

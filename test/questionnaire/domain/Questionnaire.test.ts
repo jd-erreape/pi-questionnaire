@@ -1,10 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import type { QuestionnaireDefinition } from "../../../extensions/questionnaire/domain/definition.js";
-import {
-  Questionnaire,
-  QuestionnaireSubmissionError,
-} from "../../../extensions/questionnaire/domain/questionnaire.js";
+import { QuestionnaireSubmissionError } from "../../../extensions/questionnaire/domain/errors.js";
+import { Questionnaire } from "../../../extensions/questionnaire/domain/questionnaire.js";
 
 const multiQuestionDefinition: QuestionnaireDefinition = {
   title: "Implementation preferences",

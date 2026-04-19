@@ -3,12 +3,11 @@ import type {
   QuestionnaireInputDto,
   QuestionnaireInputQuestionDto,
 } from "../../application/dto/questionnaire-input.js";
-import { Result } from "../../result.js";
+import { Result, type Result as ResultType } from "../../result.js";
 import {
   QuestionnaireValidationError,
   type ValidationProblem,
 } from "../errors.js";
-import type { ValidationResult } from "../validation.js";
 
 const REQUEST_FIELDS = new Set(["title", "instructions", "questions"]);
 const QUESTION_FIELDS = new Set([
@@ -23,7 +22,7 @@ const OPTION_FIELDS = new Set(["label", "description"]);
 
 export function validateQuestionnaireRequest(
   input: unknown,
-): ValidationResult<QuestionnaireInputDto> {
+): ResultType<QuestionnaireInputDto, QuestionnaireValidationError> {
   if (!isRecord(input)) {
     return Result.error(
       new QuestionnaireValidationError([
