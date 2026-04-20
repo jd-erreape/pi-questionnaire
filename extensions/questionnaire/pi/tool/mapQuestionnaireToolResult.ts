@@ -1,18 +1,18 @@
 import type { AgentToolResult } from "@mariozechner/pi-coding-agent";
 
-import type { QuestionnaireDto } from "../application/dto/questionnaire.js";
+import type { QuestionnaireDto } from "../../application/dto/questionnaire.js";
 import type {
   QuestionnaireCancelledDetailsDto,
   QuestionnaireDetailsDto,
   QuestionnaireSuccessDetailsDto,
   QuestionnaireValidationFailureDetailsDto,
-} from "../application/dto/questionnaire-result.js";
-import type { SubmittedQuestionnaireDto } from "../application/dto/questionnaire-submission.js";
+} from "../../application/dto/questionnaire-result.js";
+import type { SubmittedQuestionnaireDto } from "../../application/dto/questionnaire-submission.js";
 import {
   InteractiveUIRequiredError,
   InvalidQuestionnaireRequestError,
   QuestionnaireAlreadyActiveError,
-} from "../application/errors.js";
+} from "../../application/errors.js";
 
 export type QuestionnaireToolResult<TDetails extends QuestionnaireDetailsDto> =
   AgentToolResult<TDetails> & {

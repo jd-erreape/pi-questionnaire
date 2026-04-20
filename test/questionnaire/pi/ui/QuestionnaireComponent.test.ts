@@ -4,21 +4,19 @@ import { describe, expect, it, vi } from "vitest";
 import type {
   QuestionnaireDraftAnswerMutationDto,
   QuestionnaireDraftAnswersDto,
-} from "../../../extensions/questionnaire/application/dto/questionnaire-draft-answers.js";
-import type { QuestionnaireSubmissionProblemDto } from "../../../extensions/questionnaire/application/dto/questionnaire-problems.js";
-import type { QuestionnaireDto } from "../../../extensions/questionnaire/application/dto/questionnaire.js";
-import { InvalidQuestionnaireAnswersError } from "../../../extensions/questionnaire/application/errors.js";
-import {
-  QuestionnaireComponent,
-  type QuestionnaireComponentDone,
-} from "../../../extensions/questionnaire/pi/QuestionnaireComponent.js";
+} from "../../../../extensions/questionnaire/application/dto/questionnaire-draft-answers.js";
+import type { QuestionnaireSubmissionProblemDto } from "../../../../extensions/questionnaire/application/dto/questionnaire-problems.js";
+import type { QuestionnaireDto } from "../../../../extensions/questionnaire/application/dto/questionnaire.js";
+import { InvalidQuestionnaireAnswersError } from "../../../../extensions/questionnaire/application/errors.js";
+import { QuestionnaireComponent } from "../../../../extensions/questionnaire/pi/ui/QuestionnaireComponent.js";
+import type { QuestionnaireComponentDone } from "../../../../extensions/questionnaire/pi/ui/questionnaire-ui.js";
 import type {
   CancelQuestionnaireFunction,
   DisposeQuestionnaireFunction,
   SubmitQuestionnaireFunction,
   UpdateQuestionnaireAnswerFunction,
-} from "../../../extensions/questionnaire/presentation/QuestionnaireViewModel.js";
-import { QuestionnaireViewModel } from "../../../extensions/questionnaire/presentation/QuestionnaireViewModel.js";
+} from "../../../../extensions/questionnaire/presentation/QuestionnaireViewModel.js";
+import { QuestionnaireViewModel } from "../../../../extensions/questionnaire/presentation/QuestionnaireViewModel.js";
 
 function createSingleSelectQuestionnaire(): QuestionnaireDto {
   return {

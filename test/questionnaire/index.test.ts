@@ -6,8 +6,6 @@ import type {
 import { describe, expect, it, vi } from "vitest";
 
 import questionnaireExtension from "../../extensions/questionnaire/index.js";
-import type { QuestionnaireDto } from "../../extensions/questionnaire/application/dto/questionnaire.js";
-import type { SubmittedQuestionnaireDto } from "../../extensions/questionnaire/application/dto/questionnaire-submission.js";
 
 function createRegisteredTool(): ToolDefinition | undefined {
   let registeredTool: ToolDefinition | undefined;
@@ -24,63 +22,33 @@ function createRegisteredTool(): ToolDefinition | undefined {
 function createContext(options?: {
   hasUI?: boolean;
   sessionFile?: string;
-  customResult?: unknown;
-  customError?: Error;
+  selectResults?: Array<string | undefined>;
+  selectError?: Error;
+  confirmResult?: boolean;
 }) {
-  const custom = vi.fn(() =>
-    options?.customError
-      ? Promise.reject(options.customError)
-      : Promise.resolve(options?.customResult),
-  );
+  const select = vi.fn(() => {
+    if (options?.selectError) {
+      return Promise.reject(options.selectError);
+    }
+
+    return Promise.resolve(options?.selectResults?.shift());
+  });
 
   return {
     ctx: {
       hasUI: options?.hasUI ?? true,
       cwd: "/repo",
       ui: {
-        custom,
+        select,
+        input: vi.fn(),
+        confirm: vi.fn(() => Promise.resolve(options?.confirmResult ?? false)),
+        notify: vi.fn(),
       },
       sessionManager: {
         getSessionFile: () => options?.sessionFile,
       },
     } as unknown as ExtensionContext,
-    custom,
-  };
-}
-
-function createQuestionnaireDto(): QuestionnaireDto {
-  return {
-    requestID: "req-123",
-    sessionID: "session-1",
-    title: "Implementation preferences",
-    instructions: "Keep answers concise.",
-    questions: [
-      {
-        header: "Framework",
-        question: "Which frontend framework should I target?",
-        options: [{ label: "React" }, { label: "Vue" }],
-        multiSelect: false,
-        allowCustom: true,
-        required: true,
-      },
-    ],
-    draftAnswers: [
-      {
-        selections: [{ source: "option", value: "React" }],
-      },
-    ],
-  };
-}
-
-function createSubmittedQuestionnaireDto(): SubmittedQuestionnaireDto {
-  return {
-    questionnaire: createQuestionnaireDto(),
-    responses: [
-      {
-        question: "Which frontend framework should I target?",
-        selections: ["React"],
-      },
-    ],
+    select,
   };
 }
 
@@ -117,7 +85,7 @@ describe("questionnaire extension", () => {
 
   it("returns invalid_request details before opening UI", async () => {
     const tool = createRegisteredTool();
-    const { ctx, custom } = createContext();
+    const { ctx, select } = createContext();
 
     const result = await tool!.execute(
       "tool-call-1",
@@ -127,7 +95,7 @@ describe("questionnaire extension", () => {
       ctx,
     );
 
-    expect(custom).not.toHaveBeenCalled();
+    expect(select).not.toHaveBeenCalled();
     expect(result).toMatchObject({
       isError: true,
       details: {
@@ -143,7 +111,7 @@ describe("questionnaire extension", () => {
 
   it("returns interactive_ui_required when Pi has no UI", async () => {
     const tool = createRegisteredTool();
-    const { ctx, custom } = createContext({ hasUI: false });
+    const { ctx, select } = createContext({ hasUI: false });
 
     const result = await tool!.execute(
       "tool-call-1",
@@ -161,7 +129,7 @@ describe("questionnaire extension", () => {
       ctx,
     );
 
-    expect(custom).not.toHaveBeenCalled();
+    expect(select).not.toHaveBeenCalled();
     expect(result).toMatchObject({
       isError: true,
       details: {
@@ -173,11 +141,8 @@ describe("questionnaire extension", () => {
 
   it("maps a submitted UI outcome to the questionnaire success envelope", async () => {
     const tool = createRegisteredTool();
-    const { ctx, custom } = createContext({
-      customResult: {
-        kind: "submitted",
-        result: createSubmittedQuestionnaireDto(),
-      },
+    const { ctx, select } = createContext({
+      selectResults: ["◯ Option: React", "✅ Submit questionnaire"],
     });
 
     const result = await tool!.execute(
@@ -197,7 +162,7 @@ describe("questionnaire extension", () => {
       ctx,
     );
 
-    expect(custom).toHaveBeenCalledTimes(1);
+    expect(select).toHaveBeenCalledTimes(2);
     expect(result).toEqual({
       content: [
         {
@@ -234,7 +199,7 @@ describe("questionnaire extension", () => {
     const tool = createRegisteredTool();
     const { ctx: failingCtx } = createContext({
       sessionFile: "session-a",
-      customError: new Error("UI crashed"),
+      selectError: new Error("UI crashed"),
     });
 
     await expect(
@@ -256,12 +221,10 @@ describe("questionnaire extension", () => {
       ),
     ).rejects.toThrow("UI crashed");
 
-    const { ctx: retryCtx, custom: retryCustom } = createContext({
+    const { ctx: retryCtx, select: retrySelect } = createContext({
       sessionFile: "session-a",
-      customResult: {
-        kind: "cancelled",
-        result: createQuestionnaireDto(),
-      },
+      selectResults: ["❌ Cancel questionnaire"],
+      confirmResult: true,
     });
 
     const result = await tool!.execute(
@@ -282,7 +245,7 @@ describe("questionnaire extension", () => {
       retryCtx,
     );
 
-    expect(retryCustom).toHaveBeenCalledTimes(1);
+    expect(retrySelect).toHaveBeenCalledTimes(1);
     expect(result).toMatchObject({
       isError: true,
       details: {
@@ -294,11 +257,9 @@ describe("questionnaire extension", () => {
 
   it("maps a cancelled UI outcome to the questionnaire cancelled envelope", async () => {
     const tool = createRegisteredTool();
-    const { ctx, custom } = createContext({
-      customResult: {
-        kind: "cancelled",
-        result: createQuestionnaireDto(),
-      },
+    const { ctx, select } = createContext({
+      selectResults: ["❌ Cancel questionnaire"],
+      confirmResult: true,
     });
 
     const result = await tool!.execute(
@@ -319,7 +280,7 @@ describe("questionnaire extension", () => {
       ctx,
     );
 
-    expect(custom).toHaveBeenCalledTimes(1);
+    expect(select).toHaveBeenCalledTimes(1);
     expect(result).toEqual({
       isError: true,
       content: [{ type: "text", text: "Questionnaire cancelled by user." }],

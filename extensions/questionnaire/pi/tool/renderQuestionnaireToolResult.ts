@@ -5,7 +5,7 @@ import type {
 } from "@mariozechner/pi-coding-agent";
 import { Text } from "@mariozechner/pi-tui";
 
-import type { QuestionnaireDetailsDto } from "../application/dto/questionnaire-result.js";
+import type { QuestionnaireDetailsDto } from "../../application/dto/questionnaire-result.js";
 
 export function renderQuestionnaireToolResult(
   result: AgentToolResult<QuestionnaireDetailsDto>,

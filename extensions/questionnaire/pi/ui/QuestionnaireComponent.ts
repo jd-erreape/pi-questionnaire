@@ -6,24 +6,9 @@ import {
   type Component,
 } from "@mariozechner/pi-tui";
 
-import type { QuestionnaireDto } from "../application/dto/questionnaire.js";
-import type { SubmittedQuestionnaireDto } from "../application/dto/questionnaire-submission.js";
-import { dispatchQuestionnaireIntent } from "../presentation/QuestionnaireIntent.js";
-import { QuestionnaireViewModel } from "../presentation/QuestionnaireViewModel.js";
-
-export type QuestionnaireUiOutcome =
-  | {
-      kind: "submitted";
-      result: SubmittedQuestionnaireDto;
-    }
-  | {
-      kind: "cancelled";
-      result: QuestionnaireDto;
-    };
-
-export type QuestionnaireComponentDone = (
-  outcome: QuestionnaireUiOutcome,
-) => void;
+import { dispatchQuestionnaireIntent } from "../../presentation/QuestionnaireIntent.js";
+import { QuestionnaireViewModel } from "../../presentation/QuestionnaireViewModel.js";
+import type { QuestionnaireComponentDone } from "./questionnaire-ui.js";
 
 interface RenderTui {
   requestRender(): void;

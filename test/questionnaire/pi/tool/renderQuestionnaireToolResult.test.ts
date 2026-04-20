@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { renderQuestionnaireToolResult } from "../../../extensions/questionnaire/pi/renderQuestionnaireToolResult.js";
+import { renderQuestionnaireToolResult } from "../../../../extensions/questionnaire/pi/tool/renderQuestionnaireToolResult.js";
 
 const theme = {
   fg: (_token: string, text: string) => text,

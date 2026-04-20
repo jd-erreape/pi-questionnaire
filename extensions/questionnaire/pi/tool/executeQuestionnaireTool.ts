@@ -1,22 +1,22 @@
 import type { ExtensionContext } from "@mariozechner/pi-coding-agent";
 
-import type { QuestionnaireInputDto } from "../application/dto/questionnaire-input.js";
-import type { QuestionnaireDetailsDto } from "../application/dto/questionnaire-result.js";
-import { cancelQuestionnaire } from "../application/use-cases/cancelQuestionnaire.js";
-import { disposeQuestionnaire } from "../application/use-cases/disposeQuestionnaire.js";
-import { startQuestionnaire } from "../application/use-cases/startQuestionnaire.js";
-import { submitQuestionnaire } from "../application/use-cases/submitQuestionnaire.js";
-import { updateQuestionnaireAnswer } from "../application/use-cases/updateQuestionnaireAnswer.js";
-import { QuestionnaireViewModel } from "../presentation/QuestionnaireViewModel.js";
-import { InMemoryActiveQuestionnaireStore } from "../infrastructure/runtime/InMemoryActiveQuestionnaireStore.js";
-import { RandomIdGenerator } from "../infrastructure/runtime/RandomIdGenerator.js";
+import type { QuestionnaireInputDto } from "../../application/dto/questionnaire-input.js";
+import type { QuestionnaireDetailsDto } from "../../application/dto/questionnaire-result.js";
+import { cancelQuestionnaire } from "../../application/use-cases/cancelQuestionnaire.js";
+import { disposeQuestionnaire } from "../../application/use-cases/disposeQuestionnaire.js";
+import { startQuestionnaire } from "../../application/use-cases/startQuestionnaire.js";
+import { submitQuestionnaire } from "../../application/use-cases/submitQuestionnaire.js";
+import { updateQuestionnaireAnswer } from "../../application/use-cases/updateQuestionnaireAnswer.js";
+import { InMemoryActiveQuestionnaireStore } from "../../infrastructure/runtime/InMemoryActiveQuestionnaireStore.js";
+import { RandomIdGenerator } from "../../infrastructure/runtime/RandomIdGenerator.js";
+import { QuestionnaireViewModel } from "../../presentation/QuestionnaireViewModel.js";
 import {
   mapCancelledOutcome,
   mapStartFailure,
   mapSubmittedOutcome,
   type QuestionnaireToolResult,
 } from "./mapQuestionnaireToolResult.js";
-import { runQuestionnaireUi } from "./runQuestionnaireUi.js";
+import { presentQuestionnaire } from "../ui/presentQuestionnaire.js";
 
 const activeQuestionnaireStore = new InMemoryActiveQuestionnaireStore();
 const idGenerator = new RandomIdGenerator();
@@ -50,7 +50,7 @@ export async function executeQuestionnaireTool(
     (command) => disposeQuestionnaire(command, { activeQuestionnaireStore }),
   );
 
-  const outcome = await runQuestionnaireUi(ctx, viewModel);
+  const outcome = await presentQuestionnaire(ctx, viewModel);
 
   return outcome.kind === "submitted"
     ? mapSubmittedOutcome(outcome.result)

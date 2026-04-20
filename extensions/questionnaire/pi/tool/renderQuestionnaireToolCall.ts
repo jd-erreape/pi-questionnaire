@@ -1,7 +1,7 @@
 import type { Theme } from "@mariozechner/pi-coding-agent";
 import { Text } from "@mariozechner/pi-tui";
 
-import type { QuestionnaireInputDto } from "../application/dto/questionnaire-input.js";
+import type { QuestionnaireInputDto } from "../../application/dto/questionnaire-input.js";
 
 export function renderQuestionnaireToolCall(
   args: Pick<QuestionnaireInputDto, "title" | "questions">,
