@@ -2,42 +2,35 @@
 
 Guidance for coding agents working in this repository.
 
-## Project intent
+## Purpose
 
-This repository is for a **Pi package** implemented in **TypeScript**, currently aimed at building a high-quality `questionnaire` extension/tool for Pi.
+This repository contains a TypeScript Pi package for the `questionnaire` tool.
 
 Prefer solutions that keep the package:
 
+- small
 - publishable
 - testable
-- small in surface area
 - safe in non-interactive contexts
-- easy to validate in a real Pi installation
 
 ## Working style
 
-- Start with a short plan before making edits.
-- Prefer minimal diffs over broad rewrites.
+- Start with a short plan before editing.
+- Prefer minimal diffs.
 - Explain changes in plain language.
-- Ask before large refactors, dependency additions, or public API changes.
 - Keep code, comments, docs, and commit messages in English.
+- Ask before large refactors, new dependencies, public contract changes, or destructive file moves.
 
-## Quality gates
+## Source of truth
 
-For any **code change**:
+- The code is the source of truth.
+- `docs/spec.md` should describe the public tool behavior.
+- `docs/architecture.md` should describe the intended code boundaries.
+- When code and docs drift, update the docs to match the verified implementation unless the task is explicitly changing behavior.
 
-1. run linting
-2. run type checks
-3. run tests
-4. report the exact commands run and the result
+## Verification
 
-Do not claim work is done if these were skipped.
-
-If the repo does not yet expose the needed scripts, call that out explicitly and treat it as missing project setup rather than silently skipping verification.
-
-### Expected repo commands
-
-As the repo is bootstrapped, standardize on these script entrypoints:
+After code changes, run:
 
 ```bash
 npm run lint
@@ -46,161 +39,24 @@ npm test
 npm run pack:check
 ```
 
-Notes:
+If you skip any of these, say so explicitly.
 
-- `lint` = formatting/linting validation
-- `check` = typecheck and any additional static verification
-- `test` = automated test suite
-- `pack:check` = publish/package smoke check
-
-If a change introduces one of these capabilities, wire it through these script names.
-
-## TDD policy
-
-TDD is the default for behavior changes.
-
-### Required workflow
-
-Use **red -> green -> refactor** for:
-
-- new features with real logic
-- bug fixes
-- regressions
-- changes to parsing, normalization, validation, runtime flow, or tool result shapes
-
-### Practical rules
-
-- Write or update a failing test first when changing behavior.
-- For bug fixes, add a regression test that fails before the fix.
-- Make the smallest change needed to get the test green.
-- Refactor only after tests are green.
-- Do not remove or weaken tests just to make the suite pass.
-
-### Acceptable exceptions
-
-Test-first is not mandatory for:
-
-- documentation-only changes
-- pure repo scaffolding with no runtime behavior yet
-- mechanical renames with no behavior change
-- initial bootstrap work where the first task is creating the test harness itself
-
-When using an exception, state it clearly.
-
-## Testing expectations
-
-Prefer tests that are fast, deterministic, and local.
-
-Prioritize coverage for:
-
-- schema validation
-- normalization/defaulting
-- questionnaire state transitions
-- cancellation and error paths
-- non-interactive fail-fast behavior
-- package manifest / install smoke checks
-
-Prefer pure unit tests for domain/runtime logic. Keep UI-specific tests narrower and focused on interaction/state transitions.
-
-## Pi package conventions
-
-- Build this as a **Pi package**, not as app-specific code.
-- Prefer an explicit `pi` manifest in `package.json`.
-- Keep extension entrypoints easy to discover.
-- Keep runtime/domain logic separate from Pi UI glue where practical.
-- If a feature depends on interactive TUI behavior, it must fail fast in unsupported modes rather than hang.
-- Prefer source-first TypeScript unless a build step is clearly needed.
-
-## Canonical questionnaire docs
-
-For any implementation, refactor, or test change related to the `questionnaire` package:
-
-- read `docs/spec.md` as the canonical behavioral contract
-- read `docs/architecture.md` as the canonical code organization and layering guide
-- do not silently implement behavior that contradicts those docs
-- if code and docs disagree, treat the docs as canonical unless the task explicitly includes updating them
-- if intended behavior changes, update the relevant docs first or in the same change
+TDD is the default for behavior changes. Documentation-only changes are an allowed exception.
 
 ## Architecture rules
 
-- Follow the layered architecture defined in `docs/architecture.md`.
-- Keep UI architecture framework-independent.
-- Domain/runtime logic must not depend directly on a specific UI rendering approach.
-- UI should consume stable application DTOs/models and presentation state, not own the business rules.
-- Application services are the architectural boundary and should follow `DTO -> Domain -> DTO`.
-- Prefer small composable modules over large monolithic extension files.
-- Preserve clear separation between:
-  - contract
-  - domain
-  - application
-  - infrastructure
-  - presentation
-- Keep public contract DTOs, application DTOs/models, domain models, and presentation models distinct.
-- Use application-layer command/result DTOs at use-case boundaries instead of exposing domain entities directly.
-- `presentation` must not import from `domain`; it should depend on `application` and `contract` only.
-- `presentation` should go through application use cases for business actions.
-- `application` is responsible for mapping between contract/application DTOs and domain models.
-- Prefer rich domain models for stateful or invariant-heavy questionnaire behavior.
-- Keep request validation/normalization functional where appropriate, but do not push core domain behavior into a catch-all `policies/` layer.
-- Do not import Pi APIs into `domain`.
-- Do not place domain policy in `infrastructure`.
-- Do not place core questionnaire rules in `presentation`.
-- Do not introduce barrel files (`index.ts` files that only re-export sibling modules) for internal module organization.
-- Prefer direct imports from the defining module so dependencies stay explicit and easy to trace.
-
-## Dependency policy
-
-- Ask before adding new runtime dependencies.
-- Prefer no dependency over a new dependency.
-- Prefer small, well-known libraries when a dependency is justified.
-- Avoid locking the package to unnecessary framework choices.
-
-For Pi-specific libraries used by the package, prefer the packaging conventions documented by Pi when the repo is bootstrapped.
-
-## Safety and boundaries
-
-### Always
-
-- preserve user intent
-- keep changes scoped to the task
-- add or update tests with behavior changes
-- run relevant verification after code changes
-- note follow-up work and known gaps explicitly
-
-### Ask first
-
-- new dependencies
-- large refactors
-- changes to the public tool contract
-- CI/release workflow changes with broad impact
-- destructive file moves or deletions
-- steering the implementation in a way that changes scope, sequencing, or architecture beyond the user's explicit request
-
-When steering may be helpful, present the proposed direction clearly and wait for explicit human consent before proceeding.
-
-### Never
-
-- invent passing test results
-- skip verification silently
-- remove intentional functionality without confirmation
-- commit secrets, tokens, or credentials
-- edit generated/lock files unnecessarily
-
-## Repo bootstrap guidance
-
-This repository is still being established. While bootstrapping it:
-
-- prefer conventions that support publishing as a Pi package
-- define one clear way to lint, one clear way to typecheck, and one clear way to test
-- add CI only after the local scripts are working reliably
-- optimize for a fast local development loop against a real Pi installation
+- Keep `domain` independent from Pi APIs and UI code.
+- Treat `application` as the `DTO -> Domain -> DTO` boundary.
+- Keep `presentation` dependent on `application`, not `domain`.
+- Do not put core questionnaire rules in `presentation`, `pi`, or `infrastructure`.
+- Prefer direct imports over internal barrel files.
 
 ## Delivery checklist
 
-For each implementation task, report:
+Report:
 
 - what changed
 - which files changed
 - which commands were run
-- whether lint/check/tests passed
+- whether lint/check/tests/pack:check passed
 - any follow-up work or open questions

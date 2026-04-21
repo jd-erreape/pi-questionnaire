@@ -2,26 +2,36 @@
 
 Interactive `questionnaire` tool for Pi.
 
-Use it when an agent needs a short, structured clarification step before continuing work - for example to confirm scope, choose between implementation options, or collect a few bounded preferences.
+It lets an agent pause, ask the user a small structured questionnaire, and continue with machine-readable answers.
 
 ## What it provides
 
 - Pi tool: `questionnaire`
-- small interactive questionnaires in local Pi sessions
+- works in standard and RPC Pi sessions when interactive UI is available
 - 1 to 5 questions per questionnaire
 - 2 to 5 options per question
 - single-select or multi-select questions
 - optional custom answers
-- structured submitted results for the calling model
+- structured submitted results
 - explicit cancellation handling
 - fail-fast behavior when interactive UI is unavailable
 
-## Typical use cases
+## Current limits
 
-- clarifying requirements before implementation
-- choosing frameworks, libraries, or scope
-- collecting constrained setup preferences
-- resolving ambiguity without a long back-and-forth chat
+- interactive UI is required
+- one active questionnaire per session
+- no resumable questionnaires
+- no detached or distributed questionnaire flow outside the active session UI
+
+## Example runs
+
+### Standard session
+
+![Standard questionnaire flow](./docs/assets/normal-run.gif)
+
+### RPC session
+
+![RPC questionnaire flow](./docs/assets/rpc-run.gif)
 
 ## Install
 
@@ -45,8 +55,3 @@ npm run check
 npm test
 npm run pack:check
 ```
-
-## Notes
-
-- Pi package resources are declared through the `pi` manifest in `package.json`.
-- The package is source-first TypeScript and follows Pi's TypeScript loading flow.

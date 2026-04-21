@@ -2,6 +2,16 @@
   "name": "pi-questionnaire",
   "version": "0.1.0",
   "description": "Pi package providing an interactive questionnaire extension/tool.",
+  "license": "MIT",
+  "author": "Juan de Dios Herrero",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jd-erreape/pi-questionnaire.git"
+  },
+  "homepage": "https://github.com/jd-erreape/pi-questionnaire#readme",
+  "bugs": {
+    "url": "https://github.com/jd-erreape/pi-questionnaire/issues"
+  },
   "type": "module",
   "keywords": [
     "pi-package",
