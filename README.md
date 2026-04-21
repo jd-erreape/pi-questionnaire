@@ -4,7 +4,7 @@ Interactive `questionnaire` tool for Pi.
 
 It lets an agent pause, ask the user a small structured questionnaire, and continue with machine-readable answers.
 
-![Standard questionnaire flow](./docs/assets/normal-run.gif)
+![Standard questionnaire flow](https://raw.githubusercontent.com/jd-erreape/pi-questionnaire/main/docs/assets/normal-run.gif)
 
 ## What it provides
 
@@ -29,7 +29,7 @@ It lets an agent pause, ask the user a small structured questionnaire, and conti
 
 Questionnaires in subagent flows via RPC are supported. The main caveat is that the UX is a bit less polished because Pi exposes fewer UI primitives over RPC than in a standard session.
 
-![RPC questionnaire flow](./docs/assets/rpc-run.gif)
+![RPC questionnaire flow](https://raw.githubusercontent.com/jd-erreape/pi-questionnaire/main/docs/assets/rpc-run.gif)
 
 ## Install
 
