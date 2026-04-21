@@ -1,5 +1,5 @@
 {
-  "name": "pi-questionnaire",
+  "name": "@jd-erreape/pi-questionnaire",
   "version": "0.1.0",
   "description": "Pi package providing an interactive questionnaire extension/tool.",
   "license": "MIT",
