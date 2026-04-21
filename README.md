@@ -33,16 +33,28 @@ Questionnaires in subagent flows via RPC are supported. The main caveat is that 
 
 ## Install
 
+### From npm
+
+```bash
+pi install npm:@jd-erreape/pi-questionnaire -l
+```
+
+### From git
+
+```bash
+pi install git:github.com/jd-erreape/pi-questionnaire -l
+```
+
+### From a local path
+
+```bash
+pi install /absolute/path/to/pi-questionnaire -l
+```
+
 ### Quick local extension loop
 
 ```bash
 pi -e ./extensions/questionnaire/index.ts
-```
-
-### Install into another Pi project
-
-```bash
-pi install /absolute/path/to/pi-questionnaire -l
 ```
 
 ## Local checks
