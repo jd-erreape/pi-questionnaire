@@ -22,9 +22,11 @@
     "node": ">=20.6.0"
   },
   "files": [
-    "docs",
+    "docs/spec.md",
+    "docs/architecture.md",
     "extensions",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "lint": "npm run lint:eslint && npm run lint:prettier",
